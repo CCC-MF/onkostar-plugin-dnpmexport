@@ -25,11 +25,9 @@
 package de.ukw.ccc.dnpmexport.mapper;
 
 import de.itc.onkostar.api.Procedure;
-import de.ukw.ccc.bwhc.dto.Consent;
 import de.ukw.ccc.bwhc.dto.Episode;
 import de.ukw.ccc.bwhc.dto.PeriodStart;
 
-import java.text.SimpleDateFormat;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -41,16 +39,14 @@ public class KlinikAnamneseToEpisodeMapper implements Function<Procedure, Option
             return Optional.empty();
         }
 
-        var formatter = new SimpleDateFormat("yyyy-MM-dd");
-
-        var anmeldedatumMTB = procedure.getValue("AnmeldedatumMTB").getDate();
+        var anmeldedatumMTB = procedure.getValue("AnmeldedatumMTB").getString();
 
         if (null != anmeldedatumMTB) {
             return Optional.of(
                     Episode.builder()
                             .withId(procedure.getId().toString())
                             .withPatient(procedure.getPatient().getId().toString())
-                            .withPeriod(new PeriodStart(formatter.format(anmeldedatumMTB)))
+                            .withPeriod(new PeriodStart(anmeldedatumMTB))
                             .build()
             );
         }
