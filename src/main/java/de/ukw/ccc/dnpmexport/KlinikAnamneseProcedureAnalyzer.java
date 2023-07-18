@@ -122,6 +122,11 @@ public class KlinikAnamneseProcedureAnalyzer extends AbstractExportProcedureAnal
                         .collect(Collectors.toList())
         );
 
+        /** Family Member Diagnoses */
+        mtbFile.withFamilyMemberDiagnoses(
+                new KlinikAnamneseToFamilyMemberDiagnosisMapper(onkostarApi).apply(procedure)
+        );
+
         var result = mtbFile.build();
 
         try {
