@@ -50,10 +50,6 @@ public class PatientMapper implements Function<Patient, Optional<de.ukw.ccc.bwhc
             patientBuilder.withDateOfDeath(formatter.format(patient.getDeathdate()));
         }
 
-        if (null != patient.getInsuranceNumber() && !patient.getInsuranceNumber().isBlank()) {
-            patientBuilder.withInsurance(patient.getInsuranceNumber());
-        }
-
         return Optional.of(patientBuilder.build());
     }
 
