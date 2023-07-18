@@ -24,29 +24,27 @@
 
 package de.ukw.ccc.dnpmexport;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.itc.onkostar.api.Disease;
 import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
-import de.ukw.ccc.bwhc.dto.MtbFile;
-import de.ukw.ccc.dnpmexport.mapper.*;
+import de.ukw.ccc.dnpmexport.services.DnpmExportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.io.PrintWriter;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 public class KlinikAnamneseProcedureAnalyzer extends AbstractExportProcedureAnalyzer {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public KlinikAnamneseProcedureAnalyzer(final IOnkostarApi onkostarApi) {
+    private final DnpmExportService dnpmExportService;
+
+    public KlinikAnamneseProcedureAnalyzer(
+            final IOnkostarApi onkostarApi,
+            final DnpmExportService dnpmExportService
+    ) {
         super(onkostarApi);
+        this.dnpmExportService = dnpmExportService;
     }
 
     @Override
@@ -58,89 +56,7 @@ public class KlinikAnamneseProcedureAnalyzer extends AbstractExportProcedureAnal
     public void analyze(Procedure procedure, Disease disease) {
         logger.info("Run 'analyze()'");
 
-        if (procedure.getDiseases().size() != 1) {
-            logger.warn("Ignoring - more than one disease!");
-            return;
-        }
-
-        var patient = new PatientMapper().apply(procedure.getPatient());
-        var consent = new KlinikAnamneseToConsentMapper().apply(procedure);
-        var episode = new KlinikAnamneseToEpisodeMapper().apply(procedure);
-        var diagnose = new DiseaseToDiagnoseMapper(onkostarApi).apply(disease);
-
-        var mtbFile = MtbFile.builder();
-        /** Patient **/
-        if (patient.isEmpty()) {
-            logger.error("No patient found");
-            return;
-        }
-        mtbFile.withPatient(patient.get());
-
-        /** Consent **/
-        if (consent.isEmpty()) {
-            logger.error("No consent info found");
-            return;
-        }
-        mtbFile.withConsent(consent.get());
-
-        /** Episode **/
-        if (episode.isEmpty()) {
-            logger.error("No episode info found");
-            return;
-        }
-        mtbFile.withEpisode(episode.get());
-
-        /** Diagnose **/
-        if (diagnose.isEmpty()) {
-            logger.error("No diagnose info found");
-            return;
-        }
-        mtbFile.withDiagnoses(
-                procedure.getDiseases().stream()
-                        .map(d -> new DiseaseToDiagnoseMapper(onkostarApi).apply(d))
-                        .map(d -> d.orElse(null))
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList())
-        );
-
-
-        /** Empty for now **/
-        mtbFile.withNgsReports(List.of());
-
-        /** Related Care Plans **/
-        mtbFile.withCarePlans(
-                onkostarApi.getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM Therapieplan").stream()
-                        .filter(p -> {
-                            var refId = p.getValue("refdnpmklinikanamnese").getInt();
-                            return procedure.getId().equals(refId);
-                        })
-                        .map(
-                                p -> new TherapieplanToCarePlanMapper().apply(p)
-                        )
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .collect(Collectors.toList())
-        );
-
-        /** Family Member Diagnoses */
-        mtbFile.withFamilyMemberDiagnoses(
-                new KlinikAnamneseToFamilyMemberDiagnosisMapper(onkostarApi).apply(procedure)
-        );
-
-        /** ECOG */
-        mtbFile.withEcogStatus(
-                new KlinikAnamneseToEcogStatusMapper(onkostarApi).apply(procedure)
-        );
-
-        var result = mtbFile.build();
-
-        try {
-            var file = new PrintWriter("/home/pcvolkmer/testexport.json", "UTF-8");
-            new ObjectMapper().writeValue(file, result);
-        } catch (Exception e) {
-            logger.error("Error!", e);
-        }
-
+        this.dnpmExportService.export(procedure);
     }
 
 }

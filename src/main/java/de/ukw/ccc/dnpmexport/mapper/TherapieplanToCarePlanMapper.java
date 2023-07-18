@@ -25,7 +25,8 @@
 package de.ukw.ccc.dnpmexport.mapper;
 
 import de.itc.onkostar.api.Procedure;
-import de.ukw.ccc.bwhc.dto.*;
+import de.ukw.ccc.bwhc.dto.CarePlan;
+import de.ukw.ccc.bwhc.dto.NoTargetFinding;
 
 import java.text.SimpleDateFormat;
 import java.util.Optional;
