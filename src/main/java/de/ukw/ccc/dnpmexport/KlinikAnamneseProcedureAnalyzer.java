@@ -66,7 +66,7 @@ public class KlinikAnamneseProcedureAnalyzer extends AbstractExportProcedureAnal
         var patient = new PatientMapper().apply(procedure.getPatient());
         var consent = new KlinikAnamneseToConsentMapper().apply(procedure);
         var episode = new KlinikAnamneseToEpisodeMapper().apply(procedure);
-        var diagnose = new DiseaseToDiagnoseMapper().apply(disease);
+        var diagnose = new DiseaseToDiagnoseMapper(onkostarApi).apply(disease);
 
         var mtbFile = MtbFile.builder();
         /** Patient **/
@@ -97,7 +97,7 @@ public class KlinikAnamneseProcedureAnalyzer extends AbstractExportProcedureAnal
         }
         mtbFile.withDiagnoses(
                 procedure.getDiseases().stream()
-                        .map(d -> new DiseaseToDiagnoseMapper().apply(d))
+                        .map(d -> new DiseaseToDiagnoseMapper(onkostarApi).apply(d))
                         .map(d -> d.orElse(null))
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList())

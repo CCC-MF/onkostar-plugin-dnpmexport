@@ -25,6 +25,7 @@
 package de.ukw.ccc.dnpmexport.mapper;
 
 import de.itc.onkostar.api.Disease;
+import de.itc.onkostar.api.IOnkostarApi;
 import de.ukw.ccc.bwhc.dto.Diagnosis;
 import de.ukw.ccc.bwhc.dto.Icd10;
 import de.ukw.ccc.bwhc.dto.IcdO3T;
@@ -35,6 +36,12 @@ import java.util.function.Function;
 
 public class DiseaseToDiagnoseMapper implements Function<Disease, Optional<Diagnosis>> {
 
+    private final IOnkostarApi onkostarApi;
+
+    public DiseaseToDiagnoseMapper(final IOnkostarApi onkostarApi) {
+        this.onkostarApi = onkostarApi;
+    }
+
     @Override
     public Optional<Diagnosis> apply(Disease disease) {
         var formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -44,10 +51,31 @@ public class DiseaseToDiagnoseMapper implements Function<Disease, Optional<Diagn
                         .withId(disease.getId().toString())
                         .withPatient(disease.getPatientId().toString())
                         .withRecordedOn(formatter.format(disease.getDiagnosisDate()))
-                        .withIcd10(Icd10.builder().withCode(disease.getIcd10Code()).build())
-                        .withIcdO3T(IcdO3T.builder().withCode(disease.getLocalisationCode()).build())
+                        .withIcd10(
+                                Icd10
+                                        .builder()
+                                        .withCode(disease.getIcd10Code())
+                                        .withVersion(getVersion(disease.getIcd10Version()))
+                                        .build()
+                        )
+                        .withIcdO3T(
+                                IcdO3T
+                                        .builder()
+                                        .withCode(disease.getLocalisationCode())
+                                        .withVersion(getVersion(disease.getLocalisationVersion()))
+                                        .build())
                         .build()
         );
+    }
+
+    // TODO Seek a way to get ICD PropertyCatalogue Version Description which contains year in the last 4 digits
+    private String getVersion(int versionId) {
+        var oid = onkostarApi.getPropertyCatalogueVersionOid(versionId);
+        if (null == oid) {
+            return "";
+        }
+
+        return oid.substring(oid.length() - 4);
     }
 
 }
