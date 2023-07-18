@@ -127,6 +127,11 @@ public class KlinikAnamneseProcedureAnalyzer extends AbstractExportProcedureAnal
                 new KlinikAnamneseToFamilyMemberDiagnosisMapper(onkostarApi).apply(procedure)
         );
 
+        /** ECOG */
+        mtbFile.withEcogStatus(
+                new KlinikAnamneseToEcogStatusMapper(onkostarApi).apply(procedure)
+        );
+
         var result = mtbFile.build();
 
         try {
