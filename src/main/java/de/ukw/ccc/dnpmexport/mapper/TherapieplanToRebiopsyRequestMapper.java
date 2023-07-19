@@ -57,11 +57,15 @@ public class TherapieplanToRebiopsyRequestMapper implements Function<Procedure, 
 
         return onkostarApi.getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM UF Rebiopsie").stream()
                 .filter(p -> p.getParentProcedureId() == procedure.getId())
+                .filter(p ->
+                        null != p.getValue("refmolekulargenetik")
+                                && !p.getValue("refmolekulargenetik").getString().isBlank()
+                )
                 .map(p -> RebiopsyRequest.builder()
                         .withId(p.getId().toString())
                         .withPatient(getPatientId(procedure))
                         .withIssuedOn(formatter.format(procedure.getStartDate()))
-                        //.withSpecimen("")
+                        .withSpecimen(p.getValue("refmolekulargenetik").getString())
                         .build()
                 )
                 .collect(Collectors.toList());
