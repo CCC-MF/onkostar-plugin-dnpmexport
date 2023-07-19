@@ -40,10 +40,13 @@ public class TherapieplanToRecommendationMapper implements Function<Procedure, L
 
     private final IOnkostarApi onkostarApi;
 
+    private final MapperUtils mapperUtils;
+
     private final ObjectMapper objectMapper;
 
     public TherapieplanToRecommendationMapper(final IOnkostarApi onkostarApi) {
         this.onkostarApi = onkostarApi;
+        this.mapperUtils = new MapperUtils(onkostarApi);
         this.objectMapper = new ObjectMapper();
     }
 
@@ -83,7 +86,7 @@ public class TherapieplanToRecommendationMapper implements Function<Procedure, L
     }
 
     private String issuedOn(Procedure procedure) {
-        return procedure.getValue("ufeedatum").getString();
+        return mapperUtils.einzelempfehlungMtbDate(procedure);
     }
 
     private Recommendation.Priority priority(Procedure procedure) {
