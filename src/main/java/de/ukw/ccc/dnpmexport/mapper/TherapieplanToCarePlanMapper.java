@@ -29,6 +29,7 @@ import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.CarePlan;
 import de.ukw.ccc.bwhc.dto.NoTargetFinding;
 import de.ukw.ccc.bwhc.dto.RebiopsyRequest;
+import de.ukw.ccc.bwhc.dto.Recommendation;
 
 import java.text.SimpleDateFormat;
 import java.util.Optional;
@@ -94,7 +95,11 @@ public class TherapieplanToCarePlanMapper implements Function<Procedure, Optiona
 
         var einzelempfehlung = procedure.getValue("miteinzelempfehlung").getBoolean();
         if (einzelempfehlung) {
-            //carePlanBuilder.withRebiopsyRequests(procedure.getValue());
+            carePlan.getRecommendations().addAll(
+                    new TherapieplanToRecommendationMapper(onkostarApi).apply(procedure).stream()
+                            .map(Recommendation::getId)
+                            .collect(Collectors.toList())
+            );
         }
 
         return Optional.of(carePlan);
