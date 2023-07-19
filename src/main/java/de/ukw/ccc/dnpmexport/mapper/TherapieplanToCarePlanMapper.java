@@ -26,10 +26,7 @@ package de.ukw.ccc.dnpmexport.mapper;
 
 import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
-import de.ukw.ccc.bwhc.dto.CarePlan;
-import de.ukw.ccc.bwhc.dto.NoTargetFinding;
-import de.ukw.ccc.bwhc.dto.RebiopsyRequest;
-import de.ukw.ccc.bwhc.dto.Recommendation;
+import de.ukw.ccc.bwhc.dto.*;
 
 import java.text.SimpleDateFormat;
 import java.util.Optional;
@@ -101,6 +98,12 @@ public class TherapieplanToCarePlanMapper implements Function<Procedure, Optiona
                             .collect(Collectors.toList())
             );
         }
+
+        carePlan.getStudyInclusionRequests().addAll(
+                new TherapieplanToStudyInclusionMapper(onkostarApi).apply(procedure).stream()
+                        .map(StudyInclusionRequest::getId)
+                        .collect(Collectors.toList())
+        );
 
         return Optional.of(carePlan);
     }
