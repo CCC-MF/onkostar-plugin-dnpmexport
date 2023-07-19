@@ -36,10 +36,10 @@ import java.util.function.Function;
 
 public class DiseaseToDiagnoseMapper implements Function<Disease, Optional<Diagnosis>> {
 
-    private final IOnkostarApi onkostarApi;
+    private final MapperUtils mapperUtils;
 
     public DiseaseToDiagnoseMapper(final IOnkostarApi onkostarApi) {
-        this.onkostarApi = onkostarApi;
+        this.mapperUtils = new MapperUtils(onkostarApi);
     }
 
     @Override
@@ -55,27 +55,17 @@ public class DiseaseToDiagnoseMapper implements Function<Disease, Optional<Diagn
                                 Icd10
                                         .builder()
                                         .withCode(disease.getIcd10Code())
-                                        .withVersion(getVersion(disease.getIcd10Version()))
+                                        .withVersion(mapperUtils.getVersion(disease.getIcd10Version()))
                                         .build()
                         )
                         .withIcdO3T(
                                 IcdO3T
                                         .builder()
                                         .withCode(disease.getLocalisationCode())
-                                        .withVersion(getVersion(disease.getLocalisationVersion()))
+                                        .withVersion(mapperUtils.getVersion(disease.getLocalisationVersion()))
                                         .build())
                         .build()
         );
-    }
-
-    // TODO Seek a way to get ICD PropertyCatalogue Version Description which contains year in the last 4 digits
-    private String getVersion(int versionId) {
-        var oid = onkostarApi.getPropertyCatalogueVersionOid(versionId);
-        if (null == oid) {
-            return "";
-        }
-
-        return oid.substring(oid.length() - 4);
     }
 
 }

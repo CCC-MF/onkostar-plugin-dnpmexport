@@ -151,8 +151,36 @@ public class DnpmExportService {
                     return procedure.getId().equals(refId);
                 })
                 .flatMap(
-                        p-> new TherapieplanToRebiopsyRequestMapper(onkostarApi).apply(p).stream()
+                        p -> new TherapieplanToRebiopsyRequestMapper(onkostarApi).apply(p).stream()
                 )
+                .collect(Collectors.toList())
+        );
+
+        result.getRecommendations().addAll(onkostarApi.getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM Therapieplan").stream()
+                .filter(p -> {
+                    var refId = p.getValue("refdnpmklinikanamnese").getInt();
+                    return procedure.getId().equals(refId);
+                })
+                .flatMap(
+                        p -> new TherapieplanToRecommendationMapper(onkostarApi).apply(p).stream()
+                )
+                .collect(Collectors.toList())
+        );
+
+        result.getSpecimens().addAll(onkostarApi.getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM Therapieplan").stream()
+                .filter(p -> {
+                    var refId = p.getValue("refdnpmklinikanamnese").getInt();
+                    return procedure.getId().equals(refId);
+                })
+                .flatMap(
+                        p -> new MapperUtils(onkostarApi).getMolekulargenetikProcedureIdsForTherapieplan(p).stream()
+                )
+                .distinct()
+                .map(onkostarApi::getProcedure)
+                .filter(Objects::nonNull)
+                .map(p -> new MolekulargenetikToSpecimenMapper(onkostarApi).apply(p))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .collect(Collectors.toList())
         );
 
