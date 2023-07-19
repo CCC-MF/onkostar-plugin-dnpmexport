@@ -134,6 +134,7 @@ public class DnpmExportService {
         result.getSpecimens().addAll(getSpecimens(procedure));
         result.getStudyInclusionRequests().addAll(getStudyInclusionRequests(procedure));
         result.getHistologyReevaluationRequests().addAll(getHistologyReevaluationRequests(procedure));
+        result.getGeneticCounsellingRequests().addAll(getGeneticCounsellingRequests(procedure));
 
         return Optional.of(result);
     }
@@ -206,6 +207,14 @@ public class DnpmExportService {
         return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
                 .flatMap(
                         p -> new TherapieplanToHistologyReevaluationRequestMapper(onkostarApi).apply(p).stream()
+                )
+                .collect(Collectors.toList());
+    }
+
+    private List<GeneticCounsellingRequest> getGeneticCounsellingRequests(Procedure procedure) {
+        return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
+                .flatMap(
+                        p -> new TherapieplanToGeneticCounsellingRequestMapper(onkostarApi).apply(p).stream()
                 )
                 .collect(Collectors.toList());
     }
