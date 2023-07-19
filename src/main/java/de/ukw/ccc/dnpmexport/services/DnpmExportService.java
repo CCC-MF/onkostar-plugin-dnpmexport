@@ -27,7 +27,7 @@ package de.ukw.ccc.dnpmexport.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
-import de.ukw.ccc.bwhc.dto.MtbFile;
+import de.ukw.ccc.bwhc.dto.*;
 import de.ukw.ccc.dnpmexport.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -46,8 +47,11 @@ public class DnpmExportService {
 
     private final IOnkostarApi onkostarApi;
 
+    private final MapperUtils mapperUtils;
+
     public DnpmExportService(final IOnkostarApi onkostarApi) {
         this.onkostarApi = onkostarApi;
+        this.mapperUtils = new MapperUtils(onkostarApi);
     }
 
     public void export(Procedure procedure) {
@@ -121,57 +125,61 @@ public class DnpmExportService {
 
         var result = mtbFile.build();
 
-        result.getDiagnoses().addAll(
-                procedure.getDiseases().stream()
-                        .map(d -> new DiseaseToDiagnoseMapper(onkostarApi).apply(d))
-                        .map(d -> d.orElse(null))
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList())
-        );
+        result.getDiagnoses().addAll(getDiagnoses(procedure));
+        result.getCarePlans().addAll(getCarePlans(procedure));
+        result.getFamilyMemberDiagnoses().addAll(getFamilyMemberDiagnoses(procedure));
+        result.getEcogStatus().addAll(getEcogStatusList(procedure));
+        result.getRebiopsyRequests().addAll(getRebiopsyRequests(procedure));
+        result.getRecommendations().addAll(getRecommendations(procedure));
+        result.getSpecimens().addAll(getSpecimens(procedure));
 
-        result.getCarePlans().addAll(onkostarApi.getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM Therapieplan").stream()
-                .filter(p -> {
-                    var refId = p.getValue("refdnpmklinikanamnese").getInt();
-                    return procedure.getId().equals(refId);
-                })
+        return Optional.of(result);
+    }
+
+    private List<Diagnosis> getDiagnoses(Procedure procedure) {
+        return procedure.getDiseases().stream()
+                .map(d -> new DiseaseToDiagnoseMapper(onkostarApi).apply(d))
+                .map(d -> d.orElse(null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    private List<CarePlan> getCarePlans(Procedure procedure) {
+        return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
                 .map(
                         p -> new TherapieplanToCarePlanMapper(onkostarApi).apply(p)
                 )
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
+    }
 
-        result.getFamilyMemberDiagnoses().addAll(new KlinikAnamneseToFamilyMemberDiagnosisMapper(onkostarApi).apply(procedure));
+    private List<FamilyMemberDiagnosis> getFamilyMemberDiagnoses(Procedure procedure) {
+        return new KlinikAnamneseToFamilyMemberDiagnosisMapper(onkostarApi).apply(procedure);
+    }
 
-        result.getEcogStatus().addAll(new KlinikAnamneseToEcogStatusMapper(onkostarApi).apply(procedure));
+    private List<Ecogstatus> getEcogStatusList(Procedure procedure) {
+        return new KlinikAnamneseToEcogStatusMapper(onkostarApi).apply(procedure);
+    }
 
-        result.getRebiopsyRequests().addAll(onkostarApi.getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM Therapieplan").stream()
-                .filter(p -> {
-                    var refId = p.getValue("refdnpmklinikanamnese").getInt();
-                    return procedure.getId().equals(refId);
-                })
+    private List<RebiopsyRequest> getRebiopsyRequests(Procedure procedure) {
+        return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
                 .flatMap(
                         p -> new TherapieplanToRebiopsyRequestMapper(onkostarApi).apply(p).stream()
                 )
-                .collect(Collectors.toList())
-        );
+                .collect(Collectors.toList());
+    }
 
-        result.getRecommendations().addAll(onkostarApi.getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM Therapieplan").stream()
-                .filter(p -> {
-                    var refId = p.getValue("refdnpmklinikanamnese").getInt();
-                    return procedure.getId().equals(refId);
-                })
+    private List<Recommendation> getRecommendations(Procedure procedure) {
+        return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
                 .flatMap(
                         p -> new TherapieplanToRecommendationMapper(onkostarApi).apply(p).stream()
                 )
-                .collect(Collectors.toList())
-        );
+                .collect(Collectors.toList());
+    }
 
-        result.getSpecimens().addAll(onkostarApi.getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM Therapieplan").stream()
-                .filter(p -> {
-                    var refId = p.getValue("refdnpmklinikanamnese").getInt();
-                    return procedure.getId().equals(refId);
-                })
+    private List<Specimens> getSpecimens(Procedure procedure) {
+        return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
                 .flatMap(
                         p -> new MapperUtils(onkostarApi).getMolekulargenetikProcedureIdsForTherapieplan(p).stream()
                 )
@@ -181,10 +189,7 @@ public class DnpmExportService {
                 .map(p -> new MolekulargenetikToSpecimenMapper(onkostarApi).apply(p))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .collect(Collectors.toList())
-        );
-
-        return Optional.of(result);
+                .collect(Collectors.toList());
     }
 
 }

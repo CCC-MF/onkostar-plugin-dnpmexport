@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MapperUtils {
 
@@ -113,6 +114,22 @@ public class MapperUtils {
                 .filter(p -> "OS.Molekulargenetik".equals(p.getFormName()))
                 .map(Procedure::getId)
                 .collect(Collectors.toList());
+    }
+
+    public Stream<Procedure> getTherapieplanRelatedToKlinikAnamnese(Procedure procedure) {
+        if (!"DNPM Klinik/Anamnese".equals(procedure.getFormName())) {
+            logger.warn("Ignoring - not of form 'DNPM Klinik/Anamnese'!");
+            return Stream.empty();
+        }
+        if (procedure.getDiseases().size() != 1) {
+            logger.warn("Ignoring - more than one disease!");
+            return Stream.empty();
+        }
+        return onkostarApi.getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM Therapieplan").stream()
+                .filter(p -> {
+                    var refId = p.getValue("refdnpmklinikanamnese").getInt();
+                    return procedure.getId().equals(refId);
+                });
     }
 
 }
