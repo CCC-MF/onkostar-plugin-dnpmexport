@@ -132,4 +132,29 @@ public class MapperUtils {
                 });
     }
 
+    public String einzelempfehlungMtbDate(Procedure procedure) {
+        if (!"DNPM UF Einzelempfehlung".equals(procedure.getFormName())) {
+            logger.warn("Ignoring - not of form 'DNPM UF Einzelempfehlung'!");
+            return "";
+        }
+        var date = procedure.getValue("ufeedatum").getString();
+        if (!date.isBlank()) {
+            return date;
+        }
+
+        logger.warn("Kein MTB-Datum in 'DNPM UF Einzelempfehlung'!");
+        var mtb = onkostarApi.getProcedure(procedure.getValue("mtb").getInt());
+        if (null == mtb) {
+            logger.warn("Kein MTB in 'DNPM UF Einzelempfehlung'!");
+            return "";
+        }
+        switch (mtb.getFormName()) {
+            case "OS.Tumorkonferenz":
+            case "OS.Tumorkonferenz.VarianteUKW":
+                return mtb.getValue("Datum").getString();
+            default:
+                return "";
+        }
+    }
+
 }

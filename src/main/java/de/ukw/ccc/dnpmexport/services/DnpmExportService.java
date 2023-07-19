@@ -132,6 +132,7 @@ public class DnpmExportService {
         result.getRebiopsyRequests().addAll(getRebiopsyRequests(procedure));
         result.getRecommendations().addAll(getRecommendations(procedure));
         result.getSpecimens().addAll(getSpecimens(procedure));
+        result.getStudyInclusionRequests().addAll(getStudyInclusionRequests(procedure));
 
         return Optional.of(result);
     }
@@ -189,6 +190,14 @@ public class DnpmExportService {
                 .map(p -> new MolekulargenetikToSpecimenMapper(onkostarApi).apply(p))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
+                .collect(Collectors.toList());
+    }
+
+    private List<StudyInclusionRequest> getStudyInclusionRequests(Procedure procedure) {
+        return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
+                .flatMap(
+                        p -> new TherapieplanToStudyInclusionMapper(onkostarApi).apply(p).stream()
+                )
                 .collect(Collectors.toList());
     }
 
