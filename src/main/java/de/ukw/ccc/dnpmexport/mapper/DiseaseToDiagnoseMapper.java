@@ -34,6 +34,8 @@ import java.text.SimpleDateFormat;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
+
 public class DiseaseToDiagnoseMapper implements Function<Disease, Optional<Diagnosis>> {
 
     private final MapperUtils mapperUtils;
@@ -49,7 +51,7 @@ public class DiseaseToDiagnoseMapper implements Function<Disease, Optional<Diagn
         return Optional.of(
                 Diagnosis.builder()
                         .withId(disease.getId().toString())
-                        .withPatient(disease.getPatientId().toString())
+                        .withPatient(getPatientId(disease))
                         .withRecordedOn(formatter.format(disease.getDiagnosisDate()))
                         .withIcd10(
                                 Icd10

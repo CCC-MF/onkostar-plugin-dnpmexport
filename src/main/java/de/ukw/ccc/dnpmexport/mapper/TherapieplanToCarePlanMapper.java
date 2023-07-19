@@ -33,6 +33,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
+
 public class TherapieplanToCarePlanMapper implements Function<Procedure, Optional<CarePlan>> {
 
     private final IOnkostarApi onkostarApi;
@@ -59,7 +61,7 @@ public class TherapieplanToCarePlanMapper implements Function<Procedure, Optiona
         var carePlanBuilder = CarePlan.builder()
                 .withIssuedOn(formatter.format(procedure.getStartDate()))
                 .withId(procedure.getId().toString())
-                .withPatient(procedure.getPatient().getId().toString())
+                .withPatient(getPatientId(procedure))
                 .withDescription(protokollauszug == null ? "" : protokollauszug.getString())
                 .withDiagnosis(procedure.getDiseaseIds().get(0).toString());
 
@@ -68,7 +70,7 @@ public class TherapieplanToCarePlanMapper implements Function<Procedure, Optiona
             carePlanBuilder.withNoTargetFinding(
                     NoTargetFinding.builder()
                             .withDiagnosis(procedure.getDiseaseIds().get(0).toString())
-                            .withPatient(procedure.getPatient().getId().toString())
+                            .withPatient(getPatientId(procedure))
                             .withIssuedOn(formatter.format(procedure.getStartDate()))
                             .build()
             );

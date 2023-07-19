@@ -31,6 +31,8 @@ import de.ukw.ccc.bwhc.dto.PeriodStart;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
+
 public class KlinikAnamneseToEpisodeMapper implements Function<Procedure, Optional<Episode>> {
 
     @Override
@@ -45,7 +47,7 @@ public class KlinikAnamneseToEpisodeMapper implements Function<Procedure, Option
             return Optional.of(
                     Episode.builder()
                             .withId(procedure.getId().toString())
-                            .withPatient(procedure.getPatient().getId().toString())
+                            .withPatient(getPatientId(procedure))
                             .withPeriod(new PeriodStart(anmeldedatumMTB))
                             .build()
             );

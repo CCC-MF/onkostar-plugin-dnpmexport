@@ -33,6 +33,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
+
 public class MolekulargenetikToSpecimenMapper implements Function<Procedure, Optional<Specimens>> {
 
     private final IOnkostarApi onkostarApi;
@@ -62,7 +64,7 @@ public class MolekulargenetikToSpecimenMapper implements Function<Procedure, Opt
 
         var builder = Specimens.builder()
                 .withId(procedure.getId().toString())
-                .withPatient(procedure.getPatient().getId().toString());
+                .withPatient(getPatientId(procedure));
 
         var entnahmedatum = procedure.getValue("Entnahmedatum").getString();
         var entnahmemethode = procedure.getValue("Entnahmemethode").getString();

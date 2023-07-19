@@ -32,6 +32,8 @@ import java.text.SimpleDateFormat;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
+
 public class TherapieplanToHistologyReevaluationRequestMapper implements Function<Procedure, Optional<HistologyReevaluationRequest>> {
 
     private final IOnkostarApi onkostarApi;
@@ -55,7 +57,7 @@ public class TherapieplanToHistologyReevaluationRequestMapper implements Functio
         return Optional.of(
                 HistologyReevaluationRequest.builder()
                         .withId(procedure.getId().toString())
-                        .withPatient(procedure.getPatient().getId().toString())
+                        .withPatient(getPatientId(procedure))
                         .withIssuedOn(formatter.format(procedure.getStartDate()))
                         .withSpecimen(procedure.getValue("refreevaltumorprobe").getString())
                         .build()

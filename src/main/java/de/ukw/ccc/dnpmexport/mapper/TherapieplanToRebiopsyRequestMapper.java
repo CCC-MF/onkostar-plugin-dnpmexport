@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
+
 public class TherapieplanToRebiopsyRequestMapper implements Function<Procedure, List<RebiopsyRequest>> {
 
     private final IOnkostarApi onkostarApi;
@@ -57,7 +59,7 @@ public class TherapieplanToRebiopsyRequestMapper implements Function<Procedure, 
                 .filter(p -> p.getParentProcedureId() == procedure.getId())
                 .map(p -> RebiopsyRequest.builder()
                         .withId(p.getId().toString())
-                        .withPatient(procedure.getPatient().getId().toString())
+                        .withPatient(getPatientId(procedure))
                         .withIssuedOn(formatter.format(procedure.getStartDate()))
                         //.withSpecimen("")
                         .build()

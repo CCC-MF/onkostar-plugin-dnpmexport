@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
+
 public class KlinikAnamneseToFamilyMemberDiagnosisMapper implements Function<Procedure, List<FamilyMemberDiagnosis>> {
 
     private final IOnkostarApi onkostarApi;
@@ -54,7 +56,7 @@ public class KlinikAnamneseToFamilyMemberDiagnosisMapper implements Function<Pro
                 .map(p ->
                         FamilyMemberDiagnosis.builder()
                                 .withId(p.getId().toString())
-                                .withPatient(procedure.getPatient().getId().toString())
+                                .withPatient(getPatientId(procedure))
                                 .withRelationship(getRelationship(p))
                                 .build()
                 ).collect(Collectors.toList());

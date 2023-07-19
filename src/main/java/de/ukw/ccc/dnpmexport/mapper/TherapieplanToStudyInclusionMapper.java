@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
+
 public class TherapieplanToStudyInclusionMapper implements Function<Procedure, List<StudyInclusionRequest>> {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -72,12 +74,12 @@ public class TherapieplanToStudyInclusionMapper implements Function<Procedure, L
                 .stream()
                 .filter(p -> p.getParentProcedureId() == procedure.getId())
                 .flatMap(p -> nctNumbers(p).stream().map(nctNumber -> StudyInclusionRequest.builder()
-                            .withId(procedure.getId().toString() + "_" + nctNumber)
-                            .withPatient(procedure.getPatient().getId().toString())
-                            .withReason(procedure.getDiseaseIds().get(0).toString())
-                            .withIssuedOn(issuedOn(p))
-                            .withNctNumber(nctNumber)
-                            .build())
+                        .withId(procedure.getId().toString() + "_" + nctNumber)
+                        .withPatient(getPatientId(procedure))
+                        .withReason(procedure.getDiseaseIds().get(0).toString())
+                        .withIssuedOn(issuedOn(p))
+                        .withNctNumber(nctNumber)
+                        .build())
                 )
                 .collect(Collectors.toList());
     }
@@ -91,7 +93,8 @@ public class TherapieplanToStudyInclusionMapper implements Function<Procedure, L
 
         try {
             return objectMapper
-                    .readValue(json, new TypeReference<List<Studie>>() {})
+                    .readValue(json, new TypeReference<List<Studie>>() {
+                    })
                     .stream()
                     .map(s -> s.nct)
                     .filter(nct -> nct.toUpperCase().startsWith("NCT"))

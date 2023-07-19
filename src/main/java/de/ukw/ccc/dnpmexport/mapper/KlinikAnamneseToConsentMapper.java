@@ -30,6 +30,8 @@ import de.ukw.ccc.bwhc.dto.Consent;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
+
 public class KlinikAnamneseToConsentMapper implements Function<Procedure, Optional<Consent>> {
 
     @Override
@@ -44,7 +46,7 @@ public class KlinikAnamneseToConsentMapper implements Function<Procedure, Option
             return Optional.of(
                     Consent.builder()
                             .withId(procedure.getId().toString())
-                            .withPatient(procedure.getPatient().getId().toString())
+                            .withPatient(getPatientId(procedure))
                             .withStatus(Consent.Status.ACTIVE)
                             .build()
             );
@@ -53,7 +55,7 @@ public class KlinikAnamneseToConsentMapper implements Function<Procedure, Option
         return Optional.of(
                 Consent.builder()
                         .withId(procedure.getId().toString())
-                        .withPatient(procedure.getPatient().getId().toString())
+                        .withPatient(getPatientId(procedure))
                         .withStatus(Consent.Status.REJECTED)
                         .build()
         );

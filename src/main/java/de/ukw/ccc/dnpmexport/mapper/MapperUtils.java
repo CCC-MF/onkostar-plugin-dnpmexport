@@ -26,6 +26,7 @@ package de.ukw.ccc.dnpmexport.mapper;
 
 import de.itc.onkostar.api.Disease;
 import de.itc.onkostar.api.IOnkostarApi;
+import de.itc.onkostar.api.Patient;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.Icd10;
 import de.ukw.ccc.bwhc.dto.IcdO3T;
@@ -155,6 +156,19 @@ public class MapperUtils {
             default:
                 return "";
         }
+    }
+
+    public static String getPatientId(Patient patient) {
+        // "SAP-ID" for now
+        return patient.getPatientId();
+    }
+
+    public static String getPatientId(Procedure procedure) {
+        return getPatientId(procedure.getPatient());
+    }
+
+    public static String getPatientId(Disease disease) {
+        return getPatientId(disease.getPatient());
     }
 
 }

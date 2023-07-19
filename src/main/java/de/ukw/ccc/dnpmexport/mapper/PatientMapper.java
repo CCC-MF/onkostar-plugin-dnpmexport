@@ -42,7 +42,7 @@ public class PatientMapper implements Function<Patient, Optional<de.ukw.ccc.bwhc
         var formatter = new SimpleDateFormat("yyyy-MM");
 
         var patientBuilder = de.ukw.ccc.bwhc.dto.Patient.builder()
-                .withId(patient.getId().toString())
+                .withId(MapperUtils.getPatientId(patient))
                 .withBirthDate(formatter.format(patient.getBirthdate()))
                 .withGender(map(patient.getSex()));
 

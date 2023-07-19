@@ -35,6 +35,8 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
+
 public class KlinikAnamneseToEcogStatusMapper implements Function<Procedure, List<Ecogstatus>> {
 
     private final IOnkostarApi onkostarApi;
@@ -57,7 +59,7 @@ public class KlinikAnamneseToEcogStatusMapper implements Function<Procedure, Lis
                     if (null != getStatus(p)) {
                         return Ecogstatus.builder()
                                 .withId(p.getId().toString())
-                                .withPatient(procedure.getPatient().getId().toString())
+                                .withPatient(getPatientId(procedure))
                                 .withEffectiveDate(p.getValue("Datum").getString())
                                 .withValue(getStatus(p))
                                 .build();

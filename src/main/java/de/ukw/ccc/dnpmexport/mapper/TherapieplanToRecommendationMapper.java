@@ -36,6 +36,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
+
 public class TherapieplanToRecommendationMapper implements Function<Procedure, List<Recommendation>> {
 
     private final IOnkostarApi onkostarApi;
@@ -70,7 +72,7 @@ public class TherapieplanToRecommendationMapper implements Function<Procedure, L
                 .map(p -> {
                     var builder = Recommendation.builder()
                             .withId(procedure.getId().toString())
-                            .withPatient(procedure.getPatient().getId().toString())
+                            .withPatient(getPatientId(procedure))
                             .withDiagnosis(procedure.getDiseaseIds().get(0).toString())
                             .withIssuedOn(issuedOn(p))
                             .withLevelOfEvidence(levelOfEvidence(p))
