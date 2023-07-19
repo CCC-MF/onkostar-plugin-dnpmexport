@@ -24,15 +24,24 @@
 
 package de.ukw.ccc.dnpmexport.mapper;
 
+import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.CarePlan;
 import de.ukw.ccc.bwhc.dto.NoTargetFinding;
+import de.ukw.ccc.bwhc.dto.RebiopsyRequest;
 
 import java.text.SimpleDateFormat;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class TherapieplanToCarePlanMapper implements Function<Procedure, Optional<CarePlan>> {
+
+    private final IOnkostarApi onkostarApi;
+
+    public TherapieplanToCarePlanMapper(final IOnkostarApi onkostarApi) {
+        this.onkostarApi = onkostarApi;
+    }
 
     @Override
     public Optional<CarePlan> apply(Procedure procedure) {
@@ -72,9 +81,15 @@ public class TherapieplanToCarePlanMapper implements Function<Procedure, Optiona
             carePlanBuilder.withGeneticCounsellingRequest(procedure.getId().toString());
         }
 
+        var carePlan = carePlanBuilder.build();
+
         var rebiopsie = procedure.getValue("mitempfehlungrebiopsie").getBoolean();
         if (rebiopsie) {
-            //carePlanBuilder.withRebiopsyRequests(procedure.getValue());
+            carePlan.getRebiopsyRequests().addAll(
+                    new TherapieplanToRebiopsyRequestMapper(onkostarApi).apply(procedure).stream()
+                            .map(RebiopsyRequest::getId)
+                            .collect(Collectors.toList())
+            );
         }
 
         var einzelempfehlung = procedure.getValue("miteinzelempfehlung").getBoolean();
@@ -82,7 +97,7 @@ public class TherapieplanToCarePlanMapper implements Function<Procedure, Optiona
             //carePlanBuilder.withRebiopsyRequests(procedure.getValue());
         }
 
-        return Optional.of(carePlanBuilder.build());
+        return Optional.of(carePlan);
     }
 
 }

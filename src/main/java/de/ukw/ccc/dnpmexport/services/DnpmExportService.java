@@ -135,7 +135,7 @@ public class DnpmExportService {
                     return procedure.getId().equals(refId);
                 })
                 .map(
-                        p -> new TherapieplanToCarePlanMapper().apply(p)
+                        p -> new TherapieplanToCarePlanMapper(onkostarApi).apply(p)
                 )
                 .filter(Optional::isPresent)
                 .map(Optional::get)
@@ -144,6 +144,17 @@ public class DnpmExportService {
         result.getFamilyMemberDiagnoses().addAll(new KlinikAnamneseToFamilyMemberDiagnosisMapper(onkostarApi).apply(procedure));
 
         result.getEcogStatus().addAll(new KlinikAnamneseToEcogStatusMapper(onkostarApi).apply(procedure));
+
+        result.getRebiopsyRequests().addAll(onkostarApi.getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM Therapieplan").stream()
+                .filter(p -> {
+                    var refId = p.getValue("refdnpmklinikanamnese").getInt();
+                    return procedure.getId().equals(refId);
+                })
+                .flatMap(
+                        p-> new TherapieplanToRebiopsyRequestMapper(onkostarApi).apply(p).stream()
+                )
+                .collect(Collectors.toList())
+        );
 
         return Optional.of(result);
     }
