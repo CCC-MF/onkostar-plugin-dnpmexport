@@ -31,7 +31,7 @@ import de.ukw.ccc.bwhc.dto.MtbFile;
 import de.ukw.ccc.dnpmexport.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -39,7 +39,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Component
+@Service
 public class DnpmExportService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -60,12 +60,24 @@ public class DnpmExportService {
                     logger.error("Error!", e);
                 }
             });
+        } else if (procedure.getFormName().equals("DNPM Therapieplan")) {
+            var procedureId = procedure.getValue("refdnpmklinikanamnese").getInt();
+            if (procedureId > 0) {
+                exportKlinikAnamneseRelatedData(onkostarApi.getProcedure(procedureId)).ifPresent(mtbFile -> {
+                    try {
+                        var file = new PrintWriter("/testexport.json", StandardCharsets.UTF_8);
+                        new ObjectMapper().writeValue(file, mtbFile);
+                    } catch (Exception e) {
+                        logger.error("Error!", e);
+                    }
+                });
+            }
         }
     }
 
     private Optional<MtbFile> exportKlinikAnamneseRelatedData(Procedure procedure) {
-        if (!procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
-            logger.warn("Ignoring - not for 'DNPM Klinik/Anamnese'!");
+        if (null == procedure || !procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
+            logger.warn("Ignoring - not of form 'DNPM Klinik/Anamnese'!");
             return Optional.empty();
         }
 
