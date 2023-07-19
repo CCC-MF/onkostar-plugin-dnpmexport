@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -50,9 +51,27 @@ public class DnpmExportService {
     }
 
     public void export(Procedure procedure) {
+        if (procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
+            exportKlinikAnamneseRelatedData(procedure).ifPresent(mtbFile -> {
+                try {
+                    var file = new PrintWriter("/testexport.json", StandardCharsets.UTF_8);
+                    new ObjectMapper().writeValue(file, mtbFile);
+                } catch (Exception e) {
+                    logger.error("Error!", e);
+                }
+            });
+        }
+    }
+
+    private Optional<MtbFile> exportKlinikAnamneseRelatedData(Procedure procedure) {
+        if (!procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
+            logger.warn("Ignoring - not for 'DNPM Klinik/Anamnese'!");
+            return Optional.empty();
+        }
+
         if (procedure.getDiseases().size() != 1) {
             logger.warn("Ignoring - more than one disease!");
-            return;
+            return Optional.empty();
         }
 
         var patient = new PatientMapper().apply(procedure.getPatient());
@@ -64,28 +83,28 @@ public class DnpmExportService {
         /* Patient **/
         if (patient.isEmpty()) {
             logger.error("No patient found");
-            return;
+            return Optional.empty();
         }
         mtbFile.withPatient(patient.get());
 
         /* Consent **/
         if (consent.isEmpty()) {
             logger.error("No consent info found");
-            return;
+            return Optional.empty();
         }
         mtbFile.withConsent(consent.get());
 
         /* Episode **/
         if (episode.isEmpty()) {
             logger.error("No episode info found");
-            return;
+            return Optional.empty();
         }
         mtbFile.withEpisode(episode.get());
 
         /* Diagnose **/
         if (diagnose.isEmpty()) {
             logger.error("No diagnose info found");
-            return;
+            return Optional.empty();
         }
 
         var result = mtbFile.build();
@@ -114,12 +133,7 @@ public class DnpmExportService {
 
         result.getEcogStatus().addAll(new KlinikAnamneseToEcogStatusMapper(onkostarApi).apply(procedure));
 
-        try {
-            var file = new PrintWriter("/testexport.json", "UTF-8");
-            new ObjectMapper().writeValue(file, result);
-        } catch (Exception e) {
-            logger.error("Error!", e);
-        }
+        return Optional.of(result);
     }
 
 }
