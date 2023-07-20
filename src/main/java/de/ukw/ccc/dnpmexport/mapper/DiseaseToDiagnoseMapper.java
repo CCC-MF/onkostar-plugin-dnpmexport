@@ -27,8 +27,6 @@ package de.ukw.ccc.dnpmexport.mapper;
 import de.itc.onkostar.api.Disease;
 import de.itc.onkostar.api.IOnkostarApi;
 import de.ukw.ccc.bwhc.dto.Diagnosis;
-import de.ukw.ccc.bwhc.dto.Icd10;
-import de.ukw.ccc.bwhc.dto.IcdO3T;
 
 import java.text.SimpleDateFormat;
 import java.util.Optional;
@@ -48,26 +46,15 @@ public class DiseaseToDiagnoseMapper implements Function<Disease, Optional<Diagn
     public Optional<Diagnosis> apply(Disease disease) {
         var formatter = new SimpleDateFormat("yyyy-MM-dd");
 
-        return Optional.of(
-                Diagnosis.builder()
-                        .withId(disease.getId().toString())
-                        .withPatient(getPatientId(disease))
-                        .withRecordedOn(formatter.format(disease.getDiagnosisDate()))
-                        .withIcd10(
-                                Icd10
-                                        .builder()
-                                        .withCode(disease.getIcd10Code())
-                                        .withVersion(mapperUtils.getVersion(disease.getIcd10Version()))
-                                        .build()
-                        )
-                        .withIcdO3T(
-                                IcdO3T
-                                        .builder()
-                                        .withCode(disease.getLocalisationCode())
-                                        .withVersion(mapperUtils.getVersion(disease.getLocalisationVersion()))
-                                        .build())
-                        .build()
-        );
+        var builder = Diagnosis.builder()
+                .withId(disease.getId().toString())
+                .withPatient(getPatientId(disease))
+                .withRecordedOn(formatter.format(disease.getDiagnosisDate()));
+
+        mapperUtils.getIcd10(disease).ifPresent(builder::withIcd10);
+        mapperUtils.getIcdO3T(disease).ifPresent(builder::withIcdO3T);
+
+        return Optional.of(builder.build());
     }
 
 }
