@@ -26,6 +26,7 @@ package de.ukw.ccc.dnpmexport.mapper;
 
 import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
+import de.itc.onkostar.api.ProcedureEditStateType;
 import de.ukw.ccc.bwhc.dto.HistologyReevaluationRequest;
 
 import java.text.SimpleDateFormat;
@@ -54,14 +55,18 @@ public class TherapieplanToHistologyReevaluationRequestMapper implements Functio
 
         var formatter = new SimpleDateFormat("yyyy-MM-dd");
 
-        return Optional.of(
-                HistologyReevaluationRequest.builder()
+        var builder = HistologyReevaluationRequest.builder()
                         .withId(procedure.getId().toString())
                         .withPatient(getPatientId(procedure))
-                        .withIssuedOn(formatter.format(procedure.getStartDate()))
-                        .withSpecimen(procedure.getValue("refreevaltumorprobe").getString())
-                        .build()
-        );
+                        .withIssuedOn(formatter.format(procedure.getStartDate()));
+
+        var probe = onkostarApi.getProcedure(procedure.getValue("refreevaltumorprobe").getInt());
+        if (null != probe && probe.getEditState() == ProcedureEditStateType.COMPLETED) {
+            builder.withSpecimen(probe.getId().toString());
+            return Optional.of(builder.build());
+        }
+
+        return Optional.empty();
     }
 
 }

@@ -26,10 +26,12 @@ package de.ukw.ccc.dnpmexport.mapper;
 
 import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
+import de.itc.onkostar.api.ProcedureEditStateType;
 import de.ukw.ccc.bwhc.dto.RebiopsyRequest;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -61,13 +63,21 @@ public class TherapieplanToRebiopsyRequestMapper implements Function<Procedure, 
                         null != p.getValue("refmolekulargenetik")
                                 && !p.getValue("refmolekulargenetik").getString().isBlank()
                 )
-                .map(p -> RebiopsyRequest.builder()
+                .map(p -> {
+                    var builder = RebiopsyRequest.builder()
                         .withId(p.getId().toString())
                         .withPatient(getPatientId(procedure))
-                        .withIssuedOn(formatter.format(procedure.getStartDate()))
-                        .withSpecimen(p.getValue("refmolekulargenetik").getString())
-                        .build()
-                )
+                        .withIssuedOn(formatter.format(procedure.getStartDate()));
+
+                    var probe = onkostarApi.getProcedure(procedure.getValue("refmolekulargenetik").getInt());
+                    if (null != probe && probe.getEditState() == ProcedureEditStateType.COMPLETED) {
+                        builder.withSpecimen(probe.getId().toString());
+                        return builder.build();
+                    }
+
+                    return null;
+                })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
