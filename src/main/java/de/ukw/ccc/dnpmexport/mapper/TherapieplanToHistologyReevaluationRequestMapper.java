@@ -61,7 +61,7 @@ public class TherapieplanToHistologyReevaluationRequestMapper implements Functio
                         .withIssuedOn(formatter.format(procedure.getStartDate()));
 
         var probe = onkostarApi.getProcedure(procedure.getValue("refreevaltumorprobe").getInt());
-        if (null != probe && probe.getEditState() == ProcedureEditStateType.COMPLETED) {
+        if (null != probe && probe.getId() > 0 && probe.getEditState() == ProcedureEditStateType.COMPLETED) {
             builder.withSpecimen(probe.getId().toString());
             return Optional.of(builder.build());
         }

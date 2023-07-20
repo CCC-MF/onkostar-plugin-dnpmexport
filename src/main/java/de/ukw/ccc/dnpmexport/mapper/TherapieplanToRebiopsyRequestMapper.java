@@ -69,8 +69,8 @@ public class TherapieplanToRebiopsyRequestMapper implements Function<Procedure, 
                         .withPatient(getPatientId(procedure))
                         .withIssuedOn(formatter.format(procedure.getStartDate()));
 
-                    var probe = onkostarApi.getProcedure(procedure.getValue("refmolekulargenetik").getInt());
-                    if (null != probe && probe.getEditState() == ProcedureEditStateType.COMPLETED) {
+                    var probe = onkostarApi.getProcedure(p.getValue("refmolekulargenetik").getInt());
+                    if (null != probe && probe.getId() > 0 && probe.getEditState() == ProcedureEditStateType.COMPLETED) {
                         builder.withSpecimen(probe.getId().toString());
                         return builder.build();
                     }
