@@ -91,6 +91,10 @@ public class TherapieplanToStudyInclusionMapper implements Function<Procedure, L
     private List<String> nctNumbers(Procedure procedure) {
         var json = procedure.getValue("studienallejson").getString();
 
+        if (json.isBlank()) {
+            return List.of();
+        }
+
         try {
             return objectMapper
                     .readValue(json, new TypeReference<List<Studie>>() {
