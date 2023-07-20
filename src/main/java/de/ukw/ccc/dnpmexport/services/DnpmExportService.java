@@ -184,7 +184,7 @@ public class DnpmExportService {
     private List<Specimens> getSpecimens(Procedure procedure) {
         return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
                 .flatMap(
-                        p -> new MapperUtils(onkostarApi).getMolekulargenetikProcedureIdsForTherapieplan(p).stream()
+                        p -> new MapperUtils(onkostarApi).getMolekulargenetikProcedureIdsForTherapieplan(p)
                 )
                 .distinct()
                 .map(onkostarApi::getProcedure)

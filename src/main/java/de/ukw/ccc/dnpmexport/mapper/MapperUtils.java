@@ -24,10 +24,7 @@
 
 package de.ukw.ccc.dnpmexport.mapper;
 
-import de.itc.onkostar.api.Disease;
-import de.itc.onkostar.api.IOnkostarApi;
-import de.itc.onkostar.api.Patient;
-import de.itc.onkostar.api.Procedure;
+import de.itc.onkostar.api.*;
 import de.ukw.ccc.bwhc.dto.Icd10;
 import de.ukw.ccc.bwhc.dto.IcdO3T;
 import org.slf4j.Logger;
@@ -93,10 +90,16 @@ public class MapperUtils {
         );
     }
 
-    public List<Integer> getMolekulargenetikProcedureIdsForTherapieplan(Procedure procedure) {
+    /**
+     * Stream of procedures for 'OS.Molekulargenetik' related to given procedure for 'DNPM Therapieplan'
+     * @param procedure A procedure for 'DNPM Therapieplan'
+     * @param lockedOnly include locked procedures only
+     * @return Stream of procedures
+     */
+    public Stream<Integer> getMolekulargenetikProcedureIdsForTherapieplan(Procedure procedure, boolean lockedOnly) {
         if (null == procedure || !procedure.getFormName().equals("DNPM Therapieplan")) {
             logger.warn("Ignoring - not of form 'DNPM Therapieplan'!");
-            return List.of();
+            return Stream.empty();
         }
 
         var refIds = onkostarApi
@@ -113,11 +116,26 @@ public class MapperUtils {
                 .map(onkostarApi::getProcedure)
                 .filter(Objects::nonNull)
                 .filter(p -> "OS.Molekulargenetik".equals(p.getFormName()))
-                .map(Procedure::getId)
-                .collect(Collectors.toList());
+                .filter(p -> !lockedOnly || p.getEditState() == ProcedureEditStateType.COMPLETED)
+                .map(Procedure::getId);
     }
 
-    public Stream<Procedure> getTherapieplanRelatedToKlinikAnamnese(Procedure procedure) {
+    /**
+     * Stream of locked procedures for 'OS.Molekulargenetik' related to given procedure for 'DNPM Therapieplan'
+     * @param procedure A procedure for 'DNPM Therapieplan'
+     * @return Stream of locked procedures
+     */
+    public Stream<Integer> getMolekulargenetikProcedureIdsForTherapieplan(Procedure procedure) {
+        return getMolekulargenetikProcedureIdsForTherapieplan(procedure, true);
+    }
+
+    /**
+     * Stream of procedures for 'DNPM Therapieplan' related to given procedure for 'DNPM Klinik/Anamnese'
+     * @param procedure A procedure for 'DNPM Klink/Anamnese'
+     * @param lockedOnly include locked procedures only
+     * @return Stream of procedures
+     */
+    public Stream<Procedure> getTherapieplanRelatedToKlinikAnamnese(Procedure procedure, boolean lockedOnly) {
         if (!"DNPM Klinik/Anamnese".equals(procedure.getFormName())) {
             logger.warn("Ignoring - not of form 'DNPM Klinik/Anamnese'!");
             return Stream.empty();
@@ -130,7 +148,17 @@ public class MapperUtils {
                 .filter(p -> {
                     var refId = p.getValue("refdnpmklinikanamnese").getInt();
                     return procedure.getId().equals(refId);
-                });
+                })
+                .filter(p -> !lockedOnly || p.getEditState() == ProcedureEditStateType.COMPLETED);
+    }
+
+    /**
+     * Stream of locked procedures for 'DNPM Therapieplan' related to given procedure for 'DNPM Klinik/Anamnese'
+     * @param procedure A procedure for 'DNPM Klink/Anamnese'
+     * @return Stream of locked procedures
+     */
+    public Stream<Procedure> getTherapieplanRelatedToKlinikAnamnese(Procedure procedure) {
+        return getTherapieplanRelatedToKlinikAnamnese(procedure, true);
     }
 
     public String einzelempfehlungMtbDate(Procedure procedure) {
