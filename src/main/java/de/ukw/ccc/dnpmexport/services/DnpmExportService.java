@@ -24,17 +24,20 @@
 
 package de.ukw.ccc.dnpmexport.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.*;
 import de.ukw.ccc.dnpmexport.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -49,34 +52,52 @@ public class DnpmExportService {
 
     private final MapperUtils mapperUtils;
 
+    private final RestTemplate restTemplate;
+
     public DnpmExportService(final IOnkostarApi onkostarApi) {
         this.onkostarApi = onkostarApi;
         this.mapperUtils = new MapperUtils(onkostarApi);
+        this.restTemplate = new RestTemplate();
     }
 
     public void export(Procedure procedure) {
         if (procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
             exportKlinikAnamneseRelatedData(procedure).ifPresent(mtbFile -> {
-                try {
-                    var file = new PrintWriter("/testexport.json", StandardCharsets.UTF_8);
-                    new ObjectMapper().writeValue(file, mtbFile);
-                } catch (Exception e) {
-                    logger.error("Error!", e);
-                }
+                sendRequest(mtbFile);
             });
         } else if (procedure.getFormName().equals("DNPM Therapieplan")) {
             var procedureId = procedure.getValue("refdnpmklinikanamnese").getInt();
             if (procedureId > 0) {
                 exportKlinikAnamneseRelatedData(onkostarApi.getProcedure(procedureId)).ifPresent(mtbFile -> {
-                    try {
-                        var file = new PrintWriter("/testexport.json", StandardCharsets.UTF_8);
-                        new ObjectMapper().writeValue(file, mtbFile);
-                    } catch (Exception e) {
-                        logger.error("Error!", e);
-                    }
+                    sendRequest(mtbFile);
                 });
             }
         }
+    }
+
+    private boolean sendRequest(MtbFile mtbFile) {
+        var exportUrl = onkostarApi.getGlobalSetting("dnpmexport_url");
+
+        try {
+            var uri = URI.create(exportUrl);
+            var headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            var entityReq = new HttpEntity<>(mtbFile, headers);
+
+            var r = restTemplate.postForEntity(uri, entityReq, String.class);
+            if (!r.getStatusCode().is2xxSuccessful()) {
+                logger.warn("Error sending to remote system: {}", r.getBody());
+                return false;
+            }
+
+            return true;
+        } catch (IllegalArgumentException e) {
+            logger.error("Not a valid URI to export to: '{}'", exportUrl);
+        } catch (RestClientException e) {
+            logger.error("Cannot send data to remote system", e);
+        }
+        return false;
     }
 
     private Optional<MtbFile> exportKlinikAnamneseRelatedData(Procedure procedure) {
