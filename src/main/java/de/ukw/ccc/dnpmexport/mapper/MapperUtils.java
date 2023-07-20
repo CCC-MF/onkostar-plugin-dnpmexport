@@ -154,7 +154,7 @@ public class MapperUtils {
             case "OS.Tumorkonferenz.VarianteUKW":
                 return mtb.getValue("Datum").getString();
             default:
-                return "";
+                return mtb.getValue("Datum").getString();
         }
     }
 
