@@ -30,7 +30,6 @@ import de.ukw.ccc.bwhc.dto.IcdO3T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -84,8 +83,8 @@ public class MapperUtils {
 
         return Optional.of(
                 IcdO3T.builder()
-                        .withVersion(getVersion(disease.getIcd10Version()))
-                        .withCode(disease.getIcd10Code())
+                        .withVersion(getVersion(disease.getLocalisationVersion()))
+                        .withCode(disease.getLocalisationCode())
                         .build()
         );
     }
@@ -197,6 +196,21 @@ public class MapperUtils {
 
     public static String getPatientId(Disease disease) {
         return getPatientId(disease.getPatient());
+    }
+
+    public static boolean isPresent(final Procedure procedure, final String fieldName) {
+        return null != procedure.getValue(fieldName);
+    }
+
+    public static <T> Optional<T> getRequiredValue(final Procedure procedure, final String fieldName) {
+        var value = procedure.getValue(fieldName);
+
+        if (null == value) {
+            return Optional.empty();
+        }
+
+
+        return Optional.of(value.getValue());
     }
 
 }
