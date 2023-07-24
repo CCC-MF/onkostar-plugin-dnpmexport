@@ -25,7 +25,6 @@
 package de.ukw.ccc.dnpmexport.mapper;
 
 import de.itc.onkostar.api.Disease;
-import de.itc.onkostar.api.IOnkostarApi;
 import de.ukw.ccc.bwhc.dto.Diagnosis;
 
 import java.text.SimpleDateFormat;
@@ -38,8 +37,8 @@ public class DiseaseToDiagnoseMapper implements Function<Disease, Optional<Diagn
 
     private final MapperUtils mapperUtils;
 
-    public DiseaseToDiagnoseMapper(final IOnkostarApi onkostarApi) {
-        this.mapperUtils = new MapperUtils(onkostarApi);
+    public DiseaseToDiagnoseMapper(final MapperUtils mapperUtils) {
+        this.mapperUtils = mapperUtils;
     }
 
     @Override

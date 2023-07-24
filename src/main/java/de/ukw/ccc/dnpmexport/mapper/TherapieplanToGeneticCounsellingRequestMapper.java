@@ -24,7 +24,6 @@
 
 package de.ukw.ccc.dnpmexport.mapper;
 
-import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.GeneticCounsellingRequest;
 
@@ -36,12 +35,9 @@ import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
 public class TherapieplanToGeneticCounsellingRequestMapper implements Function<Procedure, Optional<GeneticCounsellingRequest>> {
 
-    private final IOnkostarApi onkostarApi;
-
     private final MapperUtils mapperUtils;
 
-    public TherapieplanToGeneticCounsellingRequestMapper(final IOnkostarApi onkostarApi, final MapperUtils mapperUtils) {
-        this.onkostarApi = onkostarApi;
+    public TherapieplanToGeneticCounsellingRequestMapper(final MapperUtils mapperUtils) {
         this.mapperUtils = mapperUtils;
     }
 

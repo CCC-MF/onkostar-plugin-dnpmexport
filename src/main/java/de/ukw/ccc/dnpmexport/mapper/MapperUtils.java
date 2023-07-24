@@ -29,11 +29,9 @@ import de.ukw.ccc.bwhc.dto.Icd10;
 import de.ukw.ccc.bwhc.dto.IcdO3T;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.codec.digest.Sha2Crypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Base64;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -47,6 +45,10 @@ public class MapperUtils {
 
     public MapperUtils(final IOnkostarApi onkostarApi) {
         this.onkostarApi = onkostarApi;
+    }
+
+    public IOnkostarApi onkostarApi() {
+        return this.onkostarApi;
     }
 
     // TODO Seek a way to get ICD PropertyCatalogue Version Description which contains year in the last 4 digits
@@ -95,7 +97,8 @@ public class MapperUtils {
 
     /**
      * Stream of procedures for 'OS.Molekulargenetik' related to given procedure for 'DNPM Therapieplan'
-     * @param procedure A procedure for 'DNPM Therapieplan'
+     *
+     * @param procedure  A procedure for 'DNPM Therapieplan'
      * @param lockedOnly include locked procedures only
      * @return Stream of procedures
      */
@@ -125,6 +128,7 @@ public class MapperUtils {
 
     /**
      * Stream of locked procedures for 'OS.Molekulargenetik' related to given procedure for 'DNPM Therapieplan'
+     *
      * @param procedure A procedure for 'DNPM Therapieplan'
      * @return Stream of locked procedures
      */
@@ -134,7 +138,8 @@ public class MapperUtils {
 
     /**
      * Stream of procedures for 'DNPM Therapieplan' related to given procedure for 'DNPM Klinik/Anamnese'
-     * @param procedure A procedure for 'DNPM Klink/Anamnese'
+     *
+     * @param procedure  A procedure for 'DNPM Klink/Anamnese'
      * @param lockedOnly include locked procedures only
      * @return Stream of procedures
      */
@@ -157,6 +162,7 @@ public class MapperUtils {
 
     /**
      * Stream of locked procedures for 'DNPM Therapieplan' related to given procedure for 'DNPM Klinik/Anamnese'
+     *
      * @param procedure A procedure for 'DNPM Klink/Anamnese'
      * @return Stream of locked procedures
      */
@@ -189,6 +195,21 @@ public class MapperUtils {
         }
     }
 
+    /**
+     * Creates SHA256 hash and returns Prefix with first 40 digits of base32 encoded hash
+     *
+     * @param id The procedure ID to be anonymized
+     * @return Prefix with first 40 digits of base32 encoded hash
+     */
+    public String anonymizeId(String id) {
+        var base32 = new Base32();
+        var prefix = this.onkostarApi.getGlobalSetting("dnpmexport_prefix");
+        if (null != prefix) {
+            return String.format("%s_%s", prefix, base32.encodeToString(DigestUtils.sha256(id)).substring(0, 41).toLowerCase());
+        }
+        return String.format("UNKNOWN_%s", base32.encodeToString(DigestUtils.sha256(id)).substring(0, 41).toLowerCase());
+    }
+
     public static String getPatientId(Patient patient) {
         // "SAP-ID" for now
         return patient.getPatientId();
@@ -215,15 +236,6 @@ public class MapperUtils {
 
 
         return Optional.of(value.getValue());
-    }
-
-    public String anonymizeId(String id) {
-        var base32 = new Base32();
-        var prefix = this.onkostarApi.getGlobalSetting("dnpmexport_prefix");
-        if (null != prefix) {
-            return String.format("%s_%s", prefix, base32.encodeToString(DigestUtils.sha256(id)).substring(0, 41).toLowerCase());
-        }
-        return String.format("UNKNOWN_%s", base32.encodeToString(DigestUtils.sha256(id)).substring(0, 41).toLowerCase());
     }
 
 }

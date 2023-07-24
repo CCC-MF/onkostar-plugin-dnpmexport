@@ -24,7 +24,6 @@
 
 package de.ukw.ccc.dnpmexport.mapper;
 
-import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
 import de.itc.onkostar.api.ProcedureEditStateType;
 import de.ukw.ccc.bwhc.dto.RebiopsyRequest;
@@ -39,12 +38,9 @@ import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
 public class TherapieplanToRebiopsyRequestMapper implements Function<Procedure, List<RebiopsyRequest>> {
 
-    private final IOnkostarApi onkostarApi;
-
     private final MapperUtils mapperUtils;
 
-    public TherapieplanToRebiopsyRequestMapper(final MapperUtils mapperUtils, final IOnkostarApi onkostarApi) {
-        this.onkostarApi = onkostarApi;
+    public TherapieplanToRebiopsyRequestMapper(final MapperUtils mapperUtils) {
         this.mapperUtils = mapperUtils;
     }
 
@@ -60,7 +56,7 @@ public class TherapieplanToRebiopsyRequestMapper implements Function<Procedure, 
 
         var formatter = new SimpleDateFormat("yyyy-MM-dd");
 
-        return onkostarApi.getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM UF Rebiopsie").stream()
+        return mapperUtils.onkostarApi().getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM UF Rebiopsie").stream()
                 .filter(p -> p.getParentProcedureId() == procedure.getId())
                 .filter(p ->
                         null != p.getValue("refmolekulargenetik")
@@ -68,11 +64,11 @@ public class TherapieplanToRebiopsyRequestMapper implements Function<Procedure, 
                 )
                 .map(p -> {
                     var builder = RebiopsyRequest.builder()
-                        .withId(mapperUtils.anonymizeId(p.getId().toString()))
-                        .withPatient(getPatientId(procedure))
-                        .withIssuedOn(formatter.format(procedure.getStartDate()));
+                            .withId(mapperUtils.anonymizeId(p.getId().toString()))
+                            .withPatient(getPatientId(procedure))
+                            .withIssuedOn(formatter.format(procedure.getStartDate()));
 
-                    var probe = onkostarApi.getProcedure(p.getValue("refmolekulargenetik").getInt());
+                    var probe = mapperUtils.onkostarApi().getProcedure(p.getValue("refmolekulargenetik").getInt());
                     if (null != probe && probe.getId() > 0 && probe.getEditState() == ProcedureEditStateType.COMPLETED) {
                         builder.withSpecimen(mapperUtils.anonymizeId(probe.getId().toString()));
                         return builder.build();

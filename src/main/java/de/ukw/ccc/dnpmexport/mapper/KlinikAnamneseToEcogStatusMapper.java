@@ -24,12 +24,10 @@
 
 package de.ukw.ccc.dnpmexport.mapper;
 
-import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.EcogStatusValue;
 import de.ukw.ccc.bwhc.dto.Ecogstatus;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -39,12 +37,9 @@ import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
 public class KlinikAnamneseToEcogStatusMapper implements Function<Procedure, List<Ecogstatus>> {
 
-    private final IOnkostarApi onkostarApi;
-
     private final MapperUtils mapperUtils;
 
-    public KlinikAnamneseToEcogStatusMapper(final IOnkostarApi onkostarApi, final MapperUtils mapperUtils) {
-        this.onkostarApi = onkostarApi;
+    public KlinikAnamneseToEcogStatusMapper(final MapperUtils mapperUtils) {
         this.mapperUtils = mapperUtils;
     }
 
@@ -54,7 +49,7 @@ public class KlinikAnamneseToEcogStatusMapper implements Function<Procedure, Lis
             return List.of();
         }
 
-        return onkostarApi
+        return mapperUtils.onkostarApi()
                 .getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM UF ECOG")
                 .stream()
                 .filter(p -> p.getParentProcedureId() == procedure.getId())

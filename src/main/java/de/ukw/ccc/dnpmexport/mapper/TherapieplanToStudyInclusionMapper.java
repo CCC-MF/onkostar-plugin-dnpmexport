@@ -27,7 +27,6 @@ package de.ukw.ccc.dnpmexport.mapper;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.StudyInclusionRequest;
 import org.slf4j.Logger;
@@ -44,15 +43,12 @@ public class TherapieplanToStudyInclusionMapper implements Function<Procedure, L
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final IOnkostarApi onkostarApi;
-
     private final MapperUtils mapperUtils;
 
     private final ObjectMapper objectMapper;
 
-    public TherapieplanToStudyInclusionMapper(final IOnkostarApi onkostarApi) {
-        this.onkostarApi = onkostarApi;
-        this.mapperUtils = new MapperUtils(onkostarApi);
+    public TherapieplanToStudyInclusionMapper(final MapperUtils mapperUtils) {
+        this.mapperUtils = mapperUtils;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -69,7 +65,7 @@ public class TherapieplanToStudyInclusionMapper implements Function<Procedure, L
 
         var formatter = new SimpleDateFormat("yyyy-MM-dd");
 
-        return onkostarApi
+        return mapperUtils.onkostarApi()
                 .getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM UF Einzelempfehlung")
                 .stream()
                 .filter(p -> p.getParentProcedureId() == procedure.getId())

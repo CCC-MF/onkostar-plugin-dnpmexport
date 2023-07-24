@@ -24,7 +24,6 @@
 
 package de.ukw.ccc.dnpmexport.mapper;
 
-import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
 import de.itc.onkostar.api.ProcedureEditStateType;
 import de.ukw.ccc.bwhc.dto.HistologyReevaluationRequest;
@@ -37,12 +36,9 @@ import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
 public class TherapieplanToHistologyReevaluationRequestMapper implements Function<Procedure, Optional<HistologyReevaluationRequest>> {
 
-    private final IOnkostarApi onkostarApi;
-
     private final MapperUtils mapperUtils;
 
-    public TherapieplanToHistologyReevaluationRequestMapper(final MapperUtils mapperUtils, final IOnkostarApi onkostarApi) {
-        this.onkostarApi = onkostarApi;
+    public TherapieplanToHistologyReevaluationRequestMapper(final MapperUtils mapperUtils) {
         this.mapperUtils = mapperUtils;
     }
 
@@ -59,11 +55,11 @@ public class TherapieplanToHistologyReevaluationRequestMapper implements Functio
         var formatter = new SimpleDateFormat("yyyy-MM-dd");
 
         var builder = HistologyReevaluationRequest.builder()
-                        .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
-                        .withPatient(getPatientId(procedure))
-                        .withIssuedOn(formatter.format(procedure.getStartDate()));
+                .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
+                .withPatient(getPatientId(procedure))
+                .withIssuedOn(formatter.format(procedure.getStartDate()));
 
-        var probe = onkostarApi.getProcedure(procedure.getValue("refreevaltumorprobe").getInt());
+        var probe = mapperUtils.onkostarApi().getProcedure(procedure.getValue("refreevaltumorprobe").getInt());
         if (null != probe && probe.getId() > 0 && probe.getEditState() == ProcedureEditStateType.COMPLETED) {
             builder.withSpecimen(mapperUtils.anonymizeId(probe.getId().toString()));
             return Optional.of(builder.build());

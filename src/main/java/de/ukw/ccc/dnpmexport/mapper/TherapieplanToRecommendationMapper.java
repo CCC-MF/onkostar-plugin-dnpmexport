@@ -26,7 +26,6 @@ package de.ukw.ccc.dnpmexport.mapper;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.*;
 
@@ -40,15 +39,12 @@ import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
 public class TherapieplanToRecommendationMapper implements Function<Procedure, List<Recommendation>> {
 
-    private final IOnkostarApi onkostarApi;
-
     private final MapperUtils mapperUtils;
 
     private final ObjectMapper objectMapper;
 
-    public TherapieplanToRecommendationMapper(final IOnkostarApi onkostarApi) {
-        this.onkostarApi = onkostarApi;
-        this.mapperUtils = new MapperUtils(onkostarApi);
+    public TherapieplanToRecommendationMapper(final MapperUtils mapperUtils) {
+        this.mapperUtils = mapperUtils;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -65,7 +61,7 @@ public class TherapieplanToRecommendationMapper implements Function<Procedure, L
 
         var formatter = new SimpleDateFormat("yyyy-MM-dd");
 
-        return onkostarApi
+        return mapperUtils.onkostarApi()
                 .getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM UF Einzelempfehlung")
                 .stream()
                 .filter(p -> p.getParentProcedureId() == procedure.getId())
@@ -171,18 +167,19 @@ public class TherapieplanToRecommendationMapper implements Function<Procedure, L
     private List<Medication> medications(Procedure procedure) {
         try {
             var wirkstoffejson = procedure.getValue("wirkstoffejson").getString();
-            return objectMapper.readValue(wirkstoffejson, new TypeReference<List<Wirkstoff>>() {}).stream()
+            return objectMapper.readValue(wirkstoffejson, new TypeReference<List<Wirkstoff>>() {
+                    }).stream()
                     .map(wirkstoff -> Medication.builder()
-                                .withCode(wirkstoff.code)
-                                .withSystem(
-                                        // Wirkstoff ohne Version => UNREGISTERED
-                                        "ATC".equals(wirkstoff.system) && null != wirkstoff.version && !wirkstoff.version.isBlank()
-                                                ? Medication.System.ATC
-                                                : Medication.System.UNREGISTERED
-                                )
-                                .withVersion(wirkstoff.version)
-                                .withDisplay(wirkstoff.name)
-                                .build()
+                            .withCode(wirkstoff.code)
+                            .withSystem(
+                                    // Wirkstoff ohne Version => UNREGISTERED
+                                    "ATC".equals(wirkstoff.system) && null != wirkstoff.version && !wirkstoff.version.isBlank()
+                                            ? Medication.System.ATC
+                                            : Medication.System.UNREGISTERED
+                            )
+                            .withVersion(wirkstoff.version)
+                            .withDisplay(wirkstoff.name)
+                            .build()
                     )
                     .collect(Collectors.toList());
         } catch (Exception e) {

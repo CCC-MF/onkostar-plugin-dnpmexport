@@ -24,7 +24,6 @@
 
 package de.ukw.ccc.dnpmexport.mapper;
 
-import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.FamilyMemberDiagnosis;
 import de.ukw.ccc.bwhc.dto.Relationship;
@@ -37,12 +36,9 @@ import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
 public class KlinikAnamneseToFamilyMemberDiagnosisMapper implements Function<Procedure, List<FamilyMemberDiagnosis>> {
 
-    private final IOnkostarApi onkostarApi;
-
     private final MapperUtils mapperUtils;
 
-    public KlinikAnamneseToFamilyMemberDiagnosisMapper(final IOnkostarApi onkostarApi, final MapperUtils mapperUtils) {
-        this.onkostarApi = onkostarApi;
+    public KlinikAnamneseToFamilyMemberDiagnosisMapper(final MapperUtils mapperUtils) {
         this.mapperUtils = mapperUtils;
     }
 
@@ -52,7 +48,7 @@ public class KlinikAnamneseToFamilyMemberDiagnosisMapper implements Function<Pro
             return List.of();
         }
 
-        return onkostarApi
+        return mapperUtils.onkostarApi()
                 .getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM UF Verwandte")
                 .stream()
                 .filter(p -> p.getParentProcedureId() == procedure.getId())

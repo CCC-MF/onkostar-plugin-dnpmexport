@@ -24,7 +24,6 @@
 
 package de.ukw.ccc.dnpmexport.mapper;
 
-import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.*;
 
@@ -37,12 +36,9 @@ import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
 public class TherapieplanToCarePlanMapper implements Function<Procedure, Optional<CarePlan>> {
 
-    private final IOnkostarApi onkostarApi;
-
     private final MapperUtils mapperUtils;
 
-    public TherapieplanToCarePlanMapper(final IOnkostarApi onkostarApi, final MapperUtils mapperUtils) {
-        this.onkostarApi = onkostarApi;
+    public TherapieplanToCarePlanMapper(final MapperUtils mapperUtils) {
         this.mapperUtils = mapperUtils;
     }
 
@@ -89,7 +85,7 @@ public class TherapieplanToCarePlanMapper implements Function<Procedure, Optiona
         var rebiopsie = procedure.getValue("mitempfehlungrebiopsie").getBoolean();
         if (rebiopsie) {
             carePlan.getRebiopsyRequests().addAll(
-                    new TherapieplanToRebiopsyRequestMapper(mapperUtils, onkostarApi).apply(procedure).stream()
+                    new TherapieplanToRebiopsyRequestMapper(mapperUtils).apply(procedure).stream()
                             .map(RebiopsyRequest::getId)
                             .collect(Collectors.toList())
             );
@@ -98,14 +94,14 @@ public class TherapieplanToCarePlanMapper implements Function<Procedure, Optiona
         var einzelempfehlung = procedure.getValue("miteinzelempfehlung").getBoolean();
         if (einzelempfehlung) {
             carePlan.getRecommendations().addAll(
-                    new TherapieplanToRecommendationMapper(onkostarApi).apply(procedure).stream()
+                    new TherapieplanToRecommendationMapper(mapperUtils).apply(procedure).stream()
                             .map(Recommendation::getId)
                             .collect(Collectors.toList())
             );
         }
 
         carePlan.getStudyInclusionRequests().addAll(
-                new TherapieplanToStudyInclusionMapper(onkostarApi).apply(procedure).stream()
+                new TherapieplanToStudyInclusionMapper(mapperUtils).apply(procedure).stream()
                         .map(StudyInclusionRequest::getId)
                         .collect(Collectors.toList())
         );

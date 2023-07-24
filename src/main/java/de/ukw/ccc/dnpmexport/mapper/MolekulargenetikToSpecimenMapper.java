@@ -24,26 +24,21 @@
 
 package de.ukw.ccc.dnpmexport.mapper;
 
-import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
-import de.ukw.ccc.bwhc.dto.*;
+import de.ukw.ccc.bwhc.dto.Collection;
+import de.ukw.ccc.bwhc.dto.Specimens;
 
-import java.text.SimpleDateFormat;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
 public class MolekulargenetikToSpecimenMapper implements Function<Procedure, Optional<Specimens>> {
 
-    private final IOnkostarApi onkostarApi;
-
     private final MapperUtils mapperUtils;
 
-    public MolekulargenetikToSpecimenMapper(final IOnkostarApi onkostarApi) {
-        this.onkostarApi = onkostarApi;
-        this.mapperUtils = new MapperUtils(onkostarApi);
+    public MolekulargenetikToSpecimenMapper(final MapperUtils mapperUtils) {
+        this.mapperUtils = mapperUtils;
     }
 
     @Override
