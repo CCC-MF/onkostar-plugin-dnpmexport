@@ -63,7 +63,7 @@ public class MolekulargenetikToSpecimenMapper implements Function<Procedure, Opt
         }
 
         var builder = Specimens.builder()
-                .withId(procedure.getId().toString())
+                .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
                 .withPatient(getPatientId(procedure));
 
         var entnahmedatum = procedure.getValue("Entnahmedatum").getString();

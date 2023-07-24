@@ -39,8 +39,11 @@ public class TherapieplanToCarePlanMapper implements Function<Procedure, Optiona
 
     private final IOnkostarApi onkostarApi;
 
-    public TherapieplanToCarePlanMapper(final IOnkostarApi onkostarApi) {
+    private final MapperUtils mapperUtils;
+
+    public TherapieplanToCarePlanMapper(final IOnkostarApi onkostarApi, final MapperUtils mapperUtils) {
         this.onkostarApi = onkostarApi;
+        this.mapperUtils = mapperUtils;
     }
 
     @Override
@@ -59,17 +62,17 @@ public class TherapieplanToCarePlanMapper implements Function<Procedure, Optiona
         var protokollauszug = procedure.getValue("protokollauszug");
 
         var carePlanBuilder = CarePlan.builder()
+                .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
                 .withIssuedOn(formatter.format(procedure.getStartDate()))
-                .withId(procedure.getId().toString())
                 .withPatient(getPatientId(procedure))
                 .withDescription(protokollauszug == null ? "" : protokollauszug.getString())
-                .withDiagnosis(procedure.getDiseaseIds().get(0).toString());
+                .withDiagnosis(mapperUtils.anonymizeId(procedure.getDiseaseIds().get(0).toString()));
 
         var targetFinding = procedure.getValue("target").getString();
         if (targetFinding.equals("KT")) {
             carePlanBuilder.withNoTargetFinding(
                     NoTargetFinding.builder()
-                            .withDiagnosis(procedure.getDiseaseIds().get(0).toString())
+                            .withDiagnosis(mapperUtils.anonymizeId(procedure.getDiseaseIds().get(0).toString()))
                             .withPatient(getPatientId(procedure))
                             .withIssuedOn(formatter.format(procedure.getStartDate()))
                             .build()
@@ -78,7 +81,7 @@ public class TherapieplanToCarePlanMapper implements Function<Procedure, Optiona
 
         var humangenBeratung = procedure.getValue("humangenberatung").getString();
         if (humangenBeratung.equals("1")) {
-            carePlanBuilder.withGeneticCounsellingRequest(procedure.getId().toString());
+            carePlanBuilder.withGeneticCounsellingRequest(mapperUtils.anonymizeId(procedure.getId().toString()));
         }
 
         var carePlan = carePlanBuilder.build();
@@ -86,7 +89,7 @@ public class TherapieplanToCarePlanMapper implements Function<Procedure, Optiona
         var rebiopsie = procedure.getValue("mitempfehlungrebiopsie").getBoolean();
         if (rebiopsie) {
             carePlan.getRebiopsyRequests().addAll(
-                    new TherapieplanToRebiopsyRequestMapper(onkostarApi).apply(procedure).stream()
+                    new TherapieplanToRebiopsyRequestMapper(mapperUtils, onkostarApi).apply(procedure).stream()
                             .map(RebiopsyRequest::getId)
                             .collect(Collectors.toList())
             );

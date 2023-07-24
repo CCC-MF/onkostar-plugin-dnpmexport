@@ -31,6 +31,8 @@ import java.text.SimpleDateFormat;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
+
 public class PatientMapper implements Function<Patient, Optional<de.ukw.ccc.bwhc.dto.Patient>> {
 
     @Override
@@ -42,7 +44,7 @@ public class PatientMapper implements Function<Patient, Optional<de.ukw.ccc.bwhc
         var formatter = new SimpleDateFormat("yyyy-MM");
 
         var patientBuilder = de.ukw.ccc.bwhc.dto.Patient.builder()
-                .withId(MapperUtils.getPatientId(patient))
+                .withId(getPatientId(patient))
                 .withBirthDate(formatter.format(patient.getBirthdate()))
                 .withGender(map(patient.getSex()));
 

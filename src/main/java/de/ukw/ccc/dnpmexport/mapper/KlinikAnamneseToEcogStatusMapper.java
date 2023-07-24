@@ -41,8 +41,11 @@ public class KlinikAnamneseToEcogStatusMapper implements Function<Procedure, Lis
 
     private final IOnkostarApi onkostarApi;
 
-    public KlinikAnamneseToEcogStatusMapper(final IOnkostarApi onkostarApi) {
+    private final MapperUtils mapperUtils;
+
+    public KlinikAnamneseToEcogStatusMapper(final IOnkostarApi onkostarApi, final MapperUtils mapperUtils) {
         this.onkostarApi = onkostarApi;
+        this.mapperUtils = mapperUtils;
     }
 
     @Override
@@ -58,7 +61,7 @@ public class KlinikAnamneseToEcogStatusMapper implements Function<Procedure, Lis
                 .map(p -> {
                     if (null != getStatus(p)) {
                         return Ecogstatus.builder()
-                                .withId(p.getId().toString())
+                                .withId(mapperUtils.anonymizeId(p.getId().toString()))
                                 .withPatient(getPatientId(procedure))
                                 .withEffectiveDate(p.getValue("Datum").getString())
                                 .withValue(getStatus(p))

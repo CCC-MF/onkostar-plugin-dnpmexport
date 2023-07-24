@@ -47,7 +47,7 @@ public class DiseaseToDiagnoseMapper implements Function<Disease, Optional<Diagn
         var formatter = new SimpleDateFormat("yyyy-MM-dd");
 
         var builder = Diagnosis.builder()
-                .withId(disease.getId().toString())
+                .withId(mapperUtils.anonymizeId(disease.getId().toString()))
                 .withPatient(getPatientId(disease))
                 .withRecordedOn(formatter.format(disease.getDiagnosisDate()));
 

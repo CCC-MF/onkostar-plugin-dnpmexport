@@ -35,6 +35,12 @@ import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
 public class KlinikAnamneseToEpisodeMapper implements Function<Procedure, Optional<Episode>> {
 
+    private final MapperUtils mapperUtils;
+
+    public KlinikAnamneseToEpisodeMapper(final MapperUtils mapperUtils) {
+        this.mapperUtils = mapperUtils;
+    }
+
     @Override
     public Optional<Episode> apply(Procedure procedure) {
         if (null == procedure || !procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
@@ -46,7 +52,7 @@ public class KlinikAnamneseToEpisodeMapper implements Function<Procedure, Option
         if (null != anmeldedatumMTB) {
             return Optional.of(
                     Episode.builder()
-                            .withId(procedure.getId().toString())
+                            .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
                             .withPatient(getPatientId(procedure))
                             .withPeriod(new PeriodStart(anmeldedatumMTB))
                             .build()

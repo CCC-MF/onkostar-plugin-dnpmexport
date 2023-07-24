@@ -34,6 +34,12 @@ import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
 public class KlinikAnamneseToConsentMapper implements Function<Procedure, Optional<Consent>> {
 
+    private final MapperUtils mapperUtils;
+
+    public KlinikAnamneseToConsentMapper(final MapperUtils mapperUtils) {
+        this.mapperUtils = mapperUtils;
+    }
+
     @Override
     public Optional<Consent> apply(Procedure procedure) {
         if (null == procedure || !procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
@@ -45,7 +51,7 @@ public class KlinikAnamneseToConsentMapper implements Function<Procedure, Option
         if (null != consentStatus && consentStatus.equals("active")) {
             return Optional.of(
                     Consent.builder()
-                            .withId(procedure.getId().toString())
+                            .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
                             .withPatient(getPatientId(procedure))
                             .withStatus(Consent.Status.ACTIVE)
                             .build()
@@ -54,7 +60,7 @@ public class KlinikAnamneseToConsentMapper implements Function<Procedure, Option
 
         return Optional.of(
                 Consent.builder()
-                        .withId(procedure.getId().toString())
+                        .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
                         .withPatient(getPatientId(procedure))
                         .withStatus(Consent.Status.REJECTED)
                         .build()

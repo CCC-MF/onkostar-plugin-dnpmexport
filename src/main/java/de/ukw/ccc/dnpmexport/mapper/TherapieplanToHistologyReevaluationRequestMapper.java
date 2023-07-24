@@ -39,8 +39,11 @@ public class TherapieplanToHistologyReevaluationRequestMapper implements Functio
 
     private final IOnkostarApi onkostarApi;
 
-    public TherapieplanToHistologyReevaluationRequestMapper(final IOnkostarApi onkostarApi) {
+    private final MapperUtils mapperUtils;
+
+    public TherapieplanToHistologyReevaluationRequestMapper(final MapperUtils mapperUtils, final IOnkostarApi onkostarApi) {
         this.onkostarApi = onkostarApi;
+        this.mapperUtils = mapperUtils;
     }
 
     @Override
@@ -56,13 +59,13 @@ public class TherapieplanToHistologyReevaluationRequestMapper implements Functio
         var formatter = new SimpleDateFormat("yyyy-MM-dd");
 
         var builder = HistologyReevaluationRequest.builder()
-                        .withId(procedure.getId().toString())
+                        .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
                         .withPatient(getPatientId(procedure))
                         .withIssuedOn(formatter.format(procedure.getStartDate()));
 
         var probe = onkostarApi.getProcedure(procedure.getValue("refreevaltumorprobe").getInt());
         if (null != probe && probe.getId() > 0 && probe.getEditState() == ProcedureEditStateType.COMPLETED) {
-            builder.withSpecimen(probe.getId().toString());
+            builder.withSpecimen(mapperUtils.anonymizeId(probe.getId().toString()));
             return Optional.of(builder.build());
         }
 

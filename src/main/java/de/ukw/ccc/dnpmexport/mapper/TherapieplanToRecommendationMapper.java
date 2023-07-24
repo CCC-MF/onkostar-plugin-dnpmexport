@@ -71,9 +71,9 @@ public class TherapieplanToRecommendationMapper implements Function<Procedure, L
                 .filter(p -> p.getParentProcedureId() == procedure.getId())
                 .map(p -> {
                     var builder = Recommendation.builder()
-                            .withId(p.getId().toString())
+                            .withId(mapperUtils.anonymizeId(p.getId().toString()))
                             .withPatient(getPatientId(procedure))
-                            .withDiagnosis(procedure.getDiseaseIds().get(0).toString())
+                            .withDiagnosis(mapperUtils.anonymizeId(procedure.getDiseaseIds().get(0).toString()))
                             .withIssuedOn(issuedOn(p))
                             .withLevelOfEvidence(levelOfEvidence(p))
                             .withPriority(priority(p))

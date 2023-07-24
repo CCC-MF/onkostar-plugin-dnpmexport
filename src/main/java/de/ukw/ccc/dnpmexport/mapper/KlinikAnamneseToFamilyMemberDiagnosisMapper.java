@@ -39,8 +39,11 @@ public class KlinikAnamneseToFamilyMemberDiagnosisMapper implements Function<Pro
 
     private final IOnkostarApi onkostarApi;
 
-    public KlinikAnamneseToFamilyMemberDiagnosisMapper(final IOnkostarApi onkostarApi) {
+    private final MapperUtils mapperUtils;
+
+    public KlinikAnamneseToFamilyMemberDiagnosisMapper(final IOnkostarApi onkostarApi, final MapperUtils mapperUtils) {
         this.onkostarApi = onkostarApi;
+        this.mapperUtils = mapperUtils;
     }
 
     @Override
@@ -55,7 +58,7 @@ public class KlinikAnamneseToFamilyMemberDiagnosisMapper implements Function<Pro
                 .filter(p -> p.getParentProcedureId() == procedure.getId())
                 .map(p ->
                         FamilyMemberDiagnosis.builder()
-                                .withId(p.getId().toString())
+                                .withId(mapperUtils.anonymizeId(p.getId().toString()))
                                 .withPatient(getPatientId(procedure))
                                 .withRelationship(getRelationship(p))
                                 .build()

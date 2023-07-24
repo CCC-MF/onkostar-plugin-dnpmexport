@@ -112,8 +112,8 @@ public class DnpmExportService {
         }
 
         var patient = new PatientMapper().apply(procedure.getPatient());
-        var consent = new KlinikAnamneseToConsentMapper().apply(procedure);
-        var episode = new KlinikAnamneseToEpisodeMapper().apply(procedure);
+        var consent = new KlinikAnamneseToConsentMapper(mapperUtils).apply(procedure);
+        var episode = new KlinikAnamneseToEpisodeMapper(mapperUtils).apply(procedure);
         var diagnose = new DiseaseToDiagnoseMapper(onkostarApi).apply(procedure.getDiseases().get(0));
 
         var mtbFile = MtbFile.builder();
@@ -171,7 +171,7 @@ public class DnpmExportService {
     private List<CarePlan> getCarePlans(Procedure procedure) {
         return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
                 .map(
-                        p -> new TherapieplanToCarePlanMapper(onkostarApi).apply(p)
+                        p -> new TherapieplanToCarePlanMapper(onkostarApi, mapperUtils).apply(p)
                 )
                 .filter(Optional::isPresent)
                 .map(Optional::get)
@@ -179,17 +179,17 @@ public class DnpmExportService {
     }
 
     private List<FamilyMemberDiagnosis> getFamilyMemberDiagnoses(Procedure procedure) {
-        return new KlinikAnamneseToFamilyMemberDiagnosisMapper(onkostarApi).apply(procedure);
+        return new KlinikAnamneseToFamilyMemberDiagnosisMapper(onkostarApi, mapperUtils).apply(procedure);
     }
 
     private List<Ecogstatus> getEcogStatusList(Procedure procedure) {
-        return new KlinikAnamneseToEcogStatusMapper(onkostarApi).apply(procedure);
+        return new KlinikAnamneseToEcogStatusMapper(onkostarApi, mapperUtils).apply(procedure);
     }
 
     private List<RebiopsyRequest> getRebiopsyRequests(Procedure procedure) {
         return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
                 .flatMap(
-                        p -> new TherapieplanToRebiopsyRequestMapper(onkostarApi).apply(p).stream()
+                        p -> new TherapieplanToRebiopsyRequestMapper(mapperUtils, onkostarApi).apply(p).stream()
                 )
                 .collect(Collectors.toList());
     }
@@ -227,7 +227,7 @@ public class DnpmExportService {
     private List<HistologyReevaluationRequest> getHistologyReevaluationRequests(Procedure procedure) {
         return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
                 .flatMap(
-                        p -> new TherapieplanToHistologyReevaluationRequestMapper(onkostarApi).apply(p).stream()
+                        p -> new TherapieplanToHistologyReevaluationRequestMapper(mapperUtils, onkostarApi).apply(p).stream()
                 )
                 .collect(Collectors.toList());
     }
@@ -235,7 +235,7 @@ public class DnpmExportService {
     private List<GeneticCounsellingRequest> getGeneticCounsellingRequests(Procedure procedure) {
         return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
                 .flatMap(
-                        p -> new TherapieplanToGeneticCounsellingRequestMapper(onkostarApi).apply(p).stream()
+                        p -> new TherapieplanToGeneticCounsellingRequestMapper(onkostarApi, mapperUtils).apply(p).stream()
                 )
                 .collect(Collectors.toList());
     }

@@ -58,6 +58,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.11</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>de.ukw.ccc</groupId>
             <artifactId>bwhc-dto-java</artifactId>
             <version>0.2.0</version>

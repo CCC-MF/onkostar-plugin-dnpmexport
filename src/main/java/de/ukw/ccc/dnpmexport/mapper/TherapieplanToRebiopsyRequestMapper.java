@@ -41,8 +41,11 @@ public class TherapieplanToRebiopsyRequestMapper implements Function<Procedure, 
 
     private final IOnkostarApi onkostarApi;
 
-    public TherapieplanToRebiopsyRequestMapper(final IOnkostarApi onkostarApi) {
+    private final MapperUtils mapperUtils;
+
+    public TherapieplanToRebiopsyRequestMapper(final MapperUtils mapperUtils, final IOnkostarApi onkostarApi) {
         this.onkostarApi = onkostarApi;
+        this.mapperUtils = mapperUtils;
     }
 
     @Override
@@ -65,13 +68,13 @@ public class TherapieplanToRebiopsyRequestMapper implements Function<Procedure, 
                 )
                 .map(p -> {
                     var builder = RebiopsyRequest.builder()
-                        .withId(p.getId().toString())
+                        .withId(mapperUtils.anonymizeId(p.getId().toString()))
                         .withPatient(getPatientId(procedure))
                         .withIssuedOn(formatter.format(procedure.getStartDate()));
 
                     var probe = onkostarApi.getProcedure(p.getValue("refmolekulargenetik").getInt());
                     if (null != probe && probe.getId() > 0 && probe.getEditState() == ProcedureEditStateType.COMPLETED) {
-                        builder.withSpecimen(probe.getId().toString());
+                        builder.withSpecimen(mapperUtils.anonymizeId(probe.getId().toString()));
                         return builder.build();
                     }
 

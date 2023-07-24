@@ -27,9 +27,13 @@ package de.ukw.ccc.dnpmexport.mapper;
 import de.itc.onkostar.api.*;
 import de.ukw.ccc.bwhc.dto.Icd10;
 import de.ukw.ccc.bwhc.dto.IcdO3T;
+import org.apache.commons.codec.binary.Base32;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.codec.digest.Sha2Crypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Base64;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -211,6 +215,15 @@ public class MapperUtils {
 
 
         return Optional.of(value.getValue());
+    }
+
+    public String anonymizeId(String id) {
+        var base32 = new Base32();
+        var prefix = this.onkostarApi.getGlobalSetting("dnpmexport_prefix");
+        if (null != prefix) {
+            return String.format("%s_%s", prefix, base32.encodeToString(DigestUtils.sha256(id)).substring(0, 41).toLowerCase());
+        }
+        return String.format("UNKNOWN_%s", base32.encodeToString(DigestUtils.sha256(id)).substring(0, 41).toLowerCase());
     }
 
 }

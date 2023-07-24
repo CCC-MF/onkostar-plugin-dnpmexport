@@ -38,8 +38,11 @@ public class TherapieplanToGeneticCounsellingRequestMapper implements Function<P
 
     private final IOnkostarApi onkostarApi;
 
-    public TherapieplanToGeneticCounsellingRequestMapper(final IOnkostarApi onkostarApi) {
+    private final MapperUtils mapperUtils;
+
+    public TherapieplanToGeneticCounsellingRequestMapper(final IOnkostarApi onkostarApi, final MapperUtils mapperUtils) {
         this.onkostarApi = onkostarApi;
+        this.mapperUtils = mapperUtils;
     }
 
     @Override
@@ -56,7 +59,7 @@ public class TherapieplanToGeneticCounsellingRequestMapper implements Function<P
 
         return Optional.of(
                 GeneticCounsellingRequest.builder()
-                        .withId(procedure.getId().toString())
+                        .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
                         .withPatient(getPatientId(procedure))
                         .withIssuedOn(formatter.format(procedure.getStartDate()))
                         .withReason(procedure.getValue("humangenberbegruendung").getString())
