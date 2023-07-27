@@ -116,6 +116,11 @@ public class DnpmExportService {
         var episode = new KlinikAnamneseToEpisodeMapper(mapperUtils).apply(procedure);
         var diagnose = new DiseaseToDiagnoseMapper(mapperUtils).apply(procedure.getDiseases().get(0));
 
+        if (consent.isEmpty() || consent.get().getStatus() != Consent.Status.ACTIVE) {
+            logger.warn("Ignoring - No conent!");
+            return Optional.empty();
+        }
+
         var mtbFile = MtbFile.builder();
         /* Patient **/
         if (patient.isEmpty()) {
