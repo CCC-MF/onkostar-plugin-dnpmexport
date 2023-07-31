@@ -119,9 +119,9 @@ public class DnpmExportService {
             restTemplate.delete(uri.toString(), entityReq, String.class);
             return true;
         } catch (IllegalArgumentException e) {
-            logger.error("Not a valid URI to export to: '{}'", exportUrl);
+            logger.error("Not a valid URI to delete from: '{}'", exportUrl);
         } catch (RestClientException e) {
-            logger.error("Cannot send data to remote system", e);
+            logger.error("Cannot delete data from remote system", e);
         }
         return false;
     }
