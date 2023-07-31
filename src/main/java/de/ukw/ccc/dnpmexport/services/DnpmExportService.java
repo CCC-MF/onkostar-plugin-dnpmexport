@@ -100,6 +100,17 @@ public class DnpmExportService {
         return false;
     }
 
+    private Optional<Boolean> hasConsent(Procedure procedure) {
+        if (null == procedure || !procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
+            logger.warn("Ignoring - not of form 'DNPM Klinik/Anamnese'!");
+            return Optional.empty();
+        }
+
+        var consent = new KlinikAnamneseToConsentMapper(mapperUtils).apply(procedure);
+
+        return Optional.of(consent.isPresent() && consent.get().getStatus() == Consent.Status.ACTIVE);
+    }
+
     private Optional<MtbFile> exportKlinikAnamneseRelatedData(Procedure procedure) {
         if (null == procedure || !procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
             logger.warn("Ignoring - not of form 'DNPM Klinik/Anamnese'!");
@@ -116,25 +127,19 @@ public class DnpmExportService {
         var episode = new KlinikAnamneseToEpisodeMapper(mapperUtils).apply(procedure);
         var diagnose = new DiseaseToDiagnoseMapper(mapperUtils).apply(procedure.getDiseases().get(0));
 
+        var mtbFile = MtbFile.builder();
         if (consent.isEmpty() || consent.get().getStatus() != Consent.Status.ACTIVE) {
             logger.warn("Ignoring - No conent!");
             return Optional.empty();
         }
+        mtbFile.withConsent(consent.get());
 
-        var mtbFile = MtbFile.builder();
         /* Patient **/
         if (patient.isEmpty()) {
             logger.error("No patient found");
             return Optional.empty();
         }
         mtbFile.withPatient(patient.get());
-
-        /* Consent **/
-        if (consent.isEmpty()) {
-            logger.error("No consent info found");
-            return Optional.empty();
-        }
-        mtbFile.withConsent(consent.get());
 
         /* Episode **/
         if (episode.isEmpty()) {
