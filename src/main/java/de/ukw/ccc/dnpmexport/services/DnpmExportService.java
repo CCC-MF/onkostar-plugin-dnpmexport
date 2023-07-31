@@ -62,20 +62,26 @@ public class DnpmExportService {
 
     public void export(Procedure procedure) {
         if (procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
-            exportKlinikAnamneseRelatedData(procedure).ifPresent(mtbFile -> {
-                sendRequest(mtbFile);
-            });
+            if (hasConsent(procedure).orElse(false)) {
+                exportKlinikAnamneseRelatedData(procedure).ifPresent(mtbFile -> {
+                    sendMtbFileRequest(mtbFile);
+                });
+            } else {
+                sendDeleteRequest(procedure.getPatient().getPatientId());
+            }
         } else if (procedure.getFormName().equals("DNPM Therapieplan")) {
             var procedureId = procedure.getValue("refdnpmklinikanamnese").getInt();
-            if (procedureId > 0) {
+            if (procedureId > 0 && hasConsent(procedure).orElse(false)) {
                 exportKlinikAnamneseRelatedData(onkostarApi.getProcedure(procedureId)).ifPresent(mtbFile -> {
-                    sendRequest(mtbFile);
+                    sendMtbFileRequest(mtbFile);
                 });
+            } else {
+                sendDeleteRequest(procedure.getPatient().getPatientId());
             }
         }
     }
 
-    private boolean sendRequest(MtbFile mtbFile) {
+    private boolean sendMtbFileRequest(MtbFile mtbFile) {
         var exportUrl = onkostarApi.getGlobalSetting("dnpmexport_url");
 
         try {
@@ -91,6 +97,26 @@ public class DnpmExportService {
                 return false;
             }
 
+            return true;
+        } catch (IllegalArgumentException e) {
+            logger.error("Not a valid URI to export to: '{}'", exportUrl);
+        } catch (RestClientException e) {
+            logger.error("Cannot send data to remote system", e);
+        }
+        return false;
+    }
+
+    private boolean sendDeleteRequest(String patientId) {
+        var exportUrl = onkostarApi.getGlobalSetting("dnpmexport_url");
+
+        try {
+            var uri = URI.create(exportUrl + "/" + patientId);
+            var headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            var entityReq = new HttpEntity<>(null, headers);
+
+            restTemplate.delete(uri.toString(), entityReq, String.class);
             return true;
         } catch (IllegalArgumentException e) {
             logger.error("Not a valid URI to export to: '{}'", exportUrl);
