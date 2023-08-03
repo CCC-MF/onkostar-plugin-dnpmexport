@@ -71,7 +71,8 @@ public class DnpmExportService {
             }
         } else if (procedure.getFormName().equals("DNPM Therapieplan")) {
             var procedureId = procedure.getValue("refdnpmklinikanamnese").getInt();
-            if (procedureId > 0 && hasConsent(procedure).orElse(false)) {
+            var p = onkostarApi.getProcedure(procedureId);
+            if (null != p && hasConsent(p).orElse(false)) {
                 exportKlinikAnamneseRelatedData(onkostarApi.getProcedure(procedureId)).ifPresent(mtbFile -> {
                     sendMtbFileRequest(mtbFile);
                 });
