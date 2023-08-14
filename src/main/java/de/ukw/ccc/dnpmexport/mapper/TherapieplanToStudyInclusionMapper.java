@@ -48,7 +48,7 @@ public class TherapieplanToStudyInclusionMapper extends TherapieplanMapper<List<
 
     @Override
     public List<StudyInclusionRequest> apply(Procedure procedure) {
-        if (null == procedure || !procedure.getFormName().equals("DNPM Therapieplan")) {
+        if (!canApply(procedure)) {
             return List.of();
         }
 

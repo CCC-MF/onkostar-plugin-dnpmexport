@@ -39,7 +39,7 @@ public class KlinikAnamneseToFamilyMemberDiagnosisMapper extends KlinikAnamneseM
 
     @Override
     public List<FamilyMemberDiagnosis> apply(Procedure procedure) {
-        if (null == procedure || !procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
+        if (!canApply(procedure)) {
             return List.of();
         }
 

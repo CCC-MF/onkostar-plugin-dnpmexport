@@ -38,7 +38,7 @@ public class MolekulargenetikToSpecimenMapper extends MolekulargenetikMapper<Opt
 
     @Override
     public Optional<Specimens> apply(Procedure procedure) {
-        if (null == procedure || !procedure.getFormName().equals("OS.Molekulargenetik")) {
+        if (!canApply(procedure)) {
             return Optional.empty();
         }
 

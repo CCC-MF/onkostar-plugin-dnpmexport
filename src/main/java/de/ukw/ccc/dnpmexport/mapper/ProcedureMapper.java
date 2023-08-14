@@ -36,6 +36,10 @@ public abstract class ProcedureMapper<D> implements Mapper<Procedure, D> {
 
     protected abstract String formName();
 
+    public boolean canApply(Procedure procedure) {
+        return null != procedure && formName().equals(procedure.getFormName());
+    }
+
     protected String anonymizeId(Procedure procedure) {
         return mapperUtils.anonymizeId(procedure.getId().toString());
     }

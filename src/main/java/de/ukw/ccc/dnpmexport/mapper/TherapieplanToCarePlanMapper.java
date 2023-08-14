@@ -38,7 +38,7 @@ public class TherapieplanToCarePlanMapper extends TherapieplanMapper<Optional<Ca
 
     @Override
     public Optional<CarePlan> apply(Procedure procedure) {
-        if (null == procedure || !procedure.getFormName().equals("DNPM Therapieplan")) {
+        if (!canApply(procedure)) {
             return Optional.empty();
         }
 

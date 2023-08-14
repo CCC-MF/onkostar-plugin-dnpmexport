@@ -37,7 +37,7 @@ public class KlinikAnamneseToConsentMapper extends KlinikAnamneseMapper<Optional
 
     @Override
     public Optional<Consent> apply(Procedure procedure) {
-        if (null == procedure || !procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
+        if (!canApply(procedure)) {
             return Optional.empty();
         }
 

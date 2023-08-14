@@ -40,7 +40,7 @@ public class KlinikAnamneseToEcogStatusMapper extends KlinikAnamneseMapper<List<
 
     @Override
     public List<Ecogstatus> apply(Procedure procedure) {
-        if (null == procedure || !procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
+        if (!canApply(procedure)) {
             return List.of();
         }
 

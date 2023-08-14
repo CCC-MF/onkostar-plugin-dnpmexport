@@ -38,7 +38,7 @@ public class TherapieplanToHistologyReevaluationRequestMapper extends Therapiepl
 
     @Override
     public Optional<HistologyReevaluationRequest> apply(Procedure procedure) {
-        if (null == procedure || !procedure.getFormName().equals("DNPM Therapieplan")) {
+        if (!canApply(procedure)) {
             return Optional.empty();
         }
 

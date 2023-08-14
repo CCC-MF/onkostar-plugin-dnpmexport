@@ -40,7 +40,7 @@ public class TherapieplanToRebiopsyRequestMapper extends TherapieplanMapper<List
 
     @Override
     public List<RebiopsyRequest> apply(Procedure procedure) {
-        if (null == procedure || !procedure.getFormName().equals("DNPM Therapieplan")) {
+        if (!canApply(procedure)) {
             return List.of();
         }
 
