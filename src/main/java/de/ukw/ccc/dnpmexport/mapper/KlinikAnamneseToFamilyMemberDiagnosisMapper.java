@@ -31,9 +31,7 @@ import de.ukw.ccc.bwhc.dto.Relationship;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
-
-public class KlinikAnamneseToFamilyMemberDiagnosisMapper extends ProcedureMapper<List<FamilyMemberDiagnosis>> {
+public class KlinikAnamneseToFamilyMemberDiagnosisMapper extends KlinikAnamneseMapper<List<FamilyMemberDiagnosis>> {
 
     public KlinikAnamneseToFamilyMemberDiagnosisMapper(final MapperUtils mapperUtils) {
         super(mapperUtils);

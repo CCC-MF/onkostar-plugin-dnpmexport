@@ -33,9 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
-
-public class TherapieplanToRecommendationMapper extends ProcedureMapper<List<Recommendation>> {
+public class TherapieplanToRecommendationMapper extends TherapieplanMapper<List<Recommendation>> {
 
     private final ObjectMapper objectMapper;
 

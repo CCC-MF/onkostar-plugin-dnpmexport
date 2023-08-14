@@ -30,9 +30,7 @@ import de.ukw.ccc.bwhc.dto.HistologyReevaluationRequest;
 
 import java.util.Optional;
 
-import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
-
-public class TherapieplanToHistologyReevaluationRequestMapper extends ProcedureMapper<Optional<HistologyReevaluationRequest>> {
+public class TherapieplanToHistologyReevaluationRequestMapper extends TherapieplanMapper<Optional<HistologyReevaluationRequest>> {
 
     public TherapieplanToHistologyReevaluationRequestMapper(final MapperUtils mapperUtils) {
         super(mapperUtils);

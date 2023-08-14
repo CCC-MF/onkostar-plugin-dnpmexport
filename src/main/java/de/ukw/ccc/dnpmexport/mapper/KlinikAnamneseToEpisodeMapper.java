@@ -30,9 +30,7 @@ import de.ukw.ccc.bwhc.dto.PeriodStart;
 
 import java.util.Optional;
 
-import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
-
-public class KlinikAnamneseToEpisodeMapper extends ProcedureMapper<Optional<Episode>> {
+public class KlinikAnamneseToEpisodeMapper extends KlinikAnamneseMapper<Optional<Episode>> {
 
     public KlinikAnamneseToEpisodeMapper(final MapperUtils mapperUtils) {
         super(mapperUtils);

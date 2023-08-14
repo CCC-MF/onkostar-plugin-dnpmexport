@@ -29,9 +29,7 @@ import de.ukw.ccc.bwhc.dto.GeneticCounsellingRequest;
 
 import java.util.Optional;
 
-import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
-
-public class TherapieplanToGeneticCounsellingRequestMapper extends ProcedureMapper<Optional<GeneticCounsellingRequest>> {
+public class TherapieplanToGeneticCounsellingRequestMapper extends TherapieplanMapper<Optional<GeneticCounsellingRequest>> {
 
     public TherapieplanToGeneticCounsellingRequestMapper(final MapperUtils mapperUtils) {
         super(mapperUtils);

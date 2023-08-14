@@ -32,9 +32,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
-
-public class KlinikAnamneseToEcogStatusMapper extends ProcedureMapper<List<Ecogstatus>> {
+public class KlinikAnamneseToEcogStatusMapper extends KlinikAnamneseMapper<List<Ecogstatus>> {
 
     public KlinikAnamneseToEcogStatusMapper(final MapperUtils mapperUtils) {
         super(mapperUtils);

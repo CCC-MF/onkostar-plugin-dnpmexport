@@ -24,42 +24,16 @@
 
 package de.ukw.ccc.dnpmexport.mapper;
 
-import de.itc.onkostar.api.Procedure;
-import de.ukw.ccc.bwhc.dto.Consent;
+public abstract class KlinikAnamneseMapper<D> extends ProcedureMapper<D> {
 
-import java.util.Optional;
+    private static final String FORM_NAME = "DNPM Klinik/Anamnese";
 
-public class KlinikAnamneseToConsentMapper extends KlinikAnamneseMapper<Optional<Consent>> {
-
-    public KlinikAnamneseToConsentMapper(final MapperUtils mapperUtils) {
+    public KlinikAnamneseMapper(final MapperUtils mapperUtils) {
         super(mapperUtils);
     }
 
     @Override
-    public Optional<Consent> apply(Procedure procedure) {
-        if (null == procedure || !procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
-            return Optional.empty();
-        }
-
-        var consentStatus = procedure.getValue("ConsentStatusEinwilligungDNPM").getString();
-
-        if (null != consentStatus && consentStatus.equals("active")) {
-            return Optional.of(
-                    Consent.builder()
-                            .withId(anonymizeId(procedure))
-                            .withPatient(getPatientId(procedure))
-                            .withStatus(Consent.Status.ACTIVE)
-                            .build()
-            );
-        }
-
-        return Optional.of(
-                Consent.builder()
-                        .withId(anonymizeId(procedure))
-                        .withPatient(getPatientId(procedure))
-                        .withStatus(Consent.Status.REJECTED)
-                        .build()
-        );
+    protected String formName() {
+        return FORM_NAME;
     }
-
 }

@@ -30,9 +30,7 @@ import de.ukw.ccc.bwhc.dto.Specimens;
 
 import java.util.Optional;
 
-import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
-
-public class MolekulargenetikToSpecimenMapper extends ProcedureMapper<Optional<Specimens>> {
+public class MolekulargenetikToSpecimenMapper extends MolekulargenetikMapper<Optional<Specimens>> {
 
     public MolekulargenetikToSpecimenMapper(final MapperUtils mapperUtils) {
         super(mapperUtils);

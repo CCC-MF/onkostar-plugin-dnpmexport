@@ -35,9 +35,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
-
-public class TherapieplanToStudyInclusionMapper extends ProcedureMapper<List<StudyInclusionRequest>> {
+public class TherapieplanToStudyInclusionMapper extends TherapieplanMapper<List<StudyInclusionRequest>> {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

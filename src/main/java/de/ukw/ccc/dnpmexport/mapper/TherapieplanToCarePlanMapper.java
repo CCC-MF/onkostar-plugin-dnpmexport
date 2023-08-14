@@ -30,9 +30,7 @@ import de.ukw.ccc.bwhc.dto.*;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
-
-public class TherapieplanToCarePlanMapper extends ProcedureMapper<Optional<CarePlan>> {
+public class TherapieplanToCarePlanMapper extends TherapieplanMapper<Optional<CarePlan>> {
 
     public TherapieplanToCarePlanMapper(final MapperUtils mapperUtils) {
         super(mapperUtils);
