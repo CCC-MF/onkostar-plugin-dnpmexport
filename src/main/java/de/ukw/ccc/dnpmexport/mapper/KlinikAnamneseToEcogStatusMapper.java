@@ -53,7 +53,7 @@ public class KlinikAnamneseToEcogStatusMapper extends ProcedureMapper<List<Ecogs
                 .map(p -> {
                     if (null != getStatus(p)) {
                         return Ecogstatus.builder()
-                                .withId(mapperUtils.anonymizeId(p.getId().toString()))
+                                .withId(anonymizeId(p))
                                 .withPatient(getPatientId(procedure))
                                 .withEffectiveDate(p.getValue("Datum").getString())
                                 .withValue(getStatus(p))

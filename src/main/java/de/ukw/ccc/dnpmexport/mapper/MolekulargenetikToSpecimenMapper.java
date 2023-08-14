@@ -55,7 +55,7 @@ public class MolekulargenetikToSpecimenMapper extends ProcedureMapper<Optional<S
         }
 
         var builder = Specimens.builder()
-                .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
+                .withId(anonymizeId(procedure))
                 .withPatient(getPatientId(procedure));
 
         var entnahmedatum = procedure.getValue("Entnahmedatum").getString();

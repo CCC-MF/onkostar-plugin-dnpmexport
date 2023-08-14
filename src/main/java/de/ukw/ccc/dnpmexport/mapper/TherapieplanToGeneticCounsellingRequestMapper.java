@@ -49,7 +49,7 @@ public class TherapieplanToGeneticCounsellingRequestMapper extends ProcedureMapp
 
         return Optional.of(
                 GeneticCounsellingRequest.builder()
-                        .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
+                        .withId(anonymizeId(procedure))
                         .withPatient(getPatientId(procedure))
                         .withIssuedOn(dateFormat().format(procedure.getStartDate()))
                         .withReason(procedure.getValue("humangenberbegruendung").getString())

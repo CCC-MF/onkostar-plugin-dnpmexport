@@ -29,6 +29,10 @@ public abstract class ProcedureMapper<D> implements Mapper<Procedure, D> {
         this.mapperUtils = mapperUtils;
     }
 
+    protected String anonymizeId(Procedure procedure) {
+        return mapperUtils.anonymizeId(procedure.getId().toString());
+    }
+
     protected static String getPatientId(Procedure procedure) {
         return MapperUtils.getPatientId(procedure.getPatient());
     }

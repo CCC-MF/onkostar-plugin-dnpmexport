@@ -52,7 +52,7 @@ public class TherapieplanToCarePlanMapper extends ProcedureMapper<Optional<CareP
         var protokollauszug = procedure.getValue("protokollauszug");
 
         var carePlanBuilder = CarePlan.builder()
-                .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
+                .withId(anonymizeId(procedure))
                 .withIssuedOn(dateFormat().format(procedure.getStartDate()))
                 .withPatient(getPatientId(procedure))
                 .withDescription(protokollauszug == null ? "" : protokollauszug.getString())

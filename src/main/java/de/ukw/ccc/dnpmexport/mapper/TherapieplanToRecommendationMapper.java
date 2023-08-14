@@ -61,7 +61,7 @@ public class TherapieplanToRecommendationMapper extends ProcedureMapper<List<Rec
                 .filter(p -> p.getParentProcedureId() == procedure.getId())
                 .map(p -> {
                     var builder = Recommendation.builder()
-                            .withId(mapperUtils.anonymizeId(p.getId().toString()))
+                            .withId(anonymizeId(p))
                             .withPatient(getPatientId(procedure))
                             .withDiagnosis(mapperUtils.anonymizeId(procedure.getDiseaseIds().get(0).toString()))
                             .withIssuedOn(issuedOn(p))

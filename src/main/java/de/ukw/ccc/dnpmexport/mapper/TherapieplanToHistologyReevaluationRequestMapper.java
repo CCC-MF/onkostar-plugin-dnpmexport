@@ -49,7 +49,7 @@ public class TherapieplanToHistologyReevaluationRequestMapper extends ProcedureM
         }
 
         var builder = HistologyReevaluationRequest.builder()
-                .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
+                .withId(anonymizeId(procedure))
                 .withPatient(getPatientId(procedure))
                 .withIssuedOn(dateFormat().format(procedure.getStartDate()));
 

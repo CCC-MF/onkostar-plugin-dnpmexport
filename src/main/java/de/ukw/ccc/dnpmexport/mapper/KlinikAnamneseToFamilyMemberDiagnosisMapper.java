@@ -51,7 +51,7 @@ public class KlinikAnamneseToFamilyMemberDiagnosisMapper extends ProcedureMapper
                 .filter(p -> p.getParentProcedureId() == procedure.getId())
                 .map(p ->
                         FamilyMemberDiagnosis.builder()
-                                .withId(mapperUtils.anonymizeId(p.getId().toString()))
+                                .withId(anonymizeId(p))
                                 .withPatient(getPatientId(procedure))
                                 .withRelationship(getRelationship(p))
                                 .build()

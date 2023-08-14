@@ -48,7 +48,7 @@ public class KlinikAnamneseToConsentMapper extends ProcedureMapper<Optional<Cons
         if (null != consentStatus && consentStatus.equals("active")) {
             return Optional.of(
                     Consent.builder()
-                            .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
+                            .withId(anonymizeId(procedure))
                             .withPatient(getPatientId(procedure))
                             .withStatus(Consent.Status.ACTIVE)
                             .build()
@@ -57,7 +57,7 @@ public class KlinikAnamneseToConsentMapper extends ProcedureMapper<Optional<Cons
 
         return Optional.of(
                 Consent.builder()
-                        .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
+                        .withId(anonymizeId(procedure))
                         .withPatient(getPatientId(procedure))
                         .withStatus(Consent.Status.REJECTED)
                         .build()

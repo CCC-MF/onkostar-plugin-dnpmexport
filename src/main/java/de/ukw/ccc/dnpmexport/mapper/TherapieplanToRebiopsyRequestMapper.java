@@ -58,7 +58,7 @@ public class TherapieplanToRebiopsyRequestMapper extends ProcedureMapper<List<Re
                 )
                 .map(p -> {
                     var builder = RebiopsyRequest.builder()
-                            .withId(mapperUtils.anonymizeId(p.getId().toString()))
+                            .withId(anonymizeId(p))
                             .withPatient(getPatientId(procedure))
                             .withIssuedOn(dateFormat().format(procedure.getStartDate()));
 

@@ -49,7 +49,7 @@ public class KlinikAnamneseToEpisodeMapper extends ProcedureMapper<Optional<Epis
         if (null != anmeldedatumMTB) {
             return Optional.of(
                     Episode.builder()
-                            .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
+                            .withId(anonymizeId(procedure))
                             .withPatient(getPatientId(procedure))
                             .withPeriod(new PeriodStart(anmeldedatumMTB))
                             .build()
