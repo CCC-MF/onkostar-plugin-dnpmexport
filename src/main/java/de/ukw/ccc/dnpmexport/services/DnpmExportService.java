@@ -63,9 +63,7 @@ public class DnpmExportService {
     public void export(Procedure procedure) {
         if (procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
             if (hasConsent(procedure).orElse(false)) {
-                exportKlinikAnamneseRelatedData(procedure).ifPresent(mtbFile -> {
-                    sendMtbFileRequest(mtbFile);
-                });
+                exportKlinikAnamneseRelatedData(procedure).ifPresent(this::sendMtbFileRequest);
             } else {
                 sendDeleteRequest(procedure.getPatient().getPatientId());
             }
@@ -73,9 +71,7 @@ public class DnpmExportService {
             var procedureId = procedure.getValue("refdnpmklinikanamnese").getInt();
             var p = onkostarApi.getProcedure(procedureId);
             if (null != p && hasConsent(p).orElse(false)) {
-                exportKlinikAnamneseRelatedData(onkostarApi.getProcedure(procedureId)).ifPresent(mtbFile -> {
-                    sendMtbFileRequest(mtbFile);
-                });
+                exportKlinikAnamneseRelatedData(onkostarApi.getProcedure(procedureId)).ifPresent(this::sendMtbFileRequest);
             } else {
                 sendDeleteRequest(procedure.getPatient().getPatientId());
             }
