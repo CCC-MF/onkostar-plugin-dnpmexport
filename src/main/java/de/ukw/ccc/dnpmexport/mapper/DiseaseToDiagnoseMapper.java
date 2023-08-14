@@ -29,8 +29,6 @@ import de.ukw.ccc.bwhc.dto.Diagnosis;
 
 import java.util.Optional;
 
-import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
-
 public class DiseaseToDiagnoseMapper implements Mapper<Disease, Optional<Diagnosis>> {
 
     private final MapperUtils mapperUtils;
@@ -52,4 +50,7 @@ public class DiseaseToDiagnoseMapper implements Mapper<Disease, Optional<Diagnos
         return Optional.of(builder.build());
     }
 
+    private static String getPatientId(Disease disease) {
+        return MapperUtils.getPatientId(disease.getPatient());
+    }
 }

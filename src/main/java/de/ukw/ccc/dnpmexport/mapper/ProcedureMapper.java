@@ -29,4 +29,8 @@ public abstract class ProcedureMapper<D> implements Mapper<Procedure, D> {
         this.mapperUtils = mapperUtils;
     }
 
+    protected static String getPatientId(Procedure procedure) {
+        return MapperUtils.getPatientId(procedure.getPatient());
+    }
+
 }

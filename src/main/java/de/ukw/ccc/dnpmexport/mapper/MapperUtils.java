@@ -215,14 +215,6 @@ public class MapperUtils {
         return patient.getPatientId();
     }
 
-    public static String getPatientId(Procedure procedure) {
-        return getPatientId(procedure.getPatient());
-    }
-
-    public static String getPatientId(Disease disease) {
-        return getPatientId(disease.getPatient());
-    }
-
     public static boolean isPresent(final Procedure procedure, final String fieldName) {
         return null != procedure.getValue(fieldName);
     }
