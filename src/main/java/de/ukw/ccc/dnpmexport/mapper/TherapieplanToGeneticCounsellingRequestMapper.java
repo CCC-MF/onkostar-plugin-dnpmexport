@@ -27,7 +27,6 @@ package de.ukw.ccc.dnpmexport.mapper;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.GeneticCounsellingRequest;
 
-import java.text.SimpleDateFormat;
 import java.util.Optional;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
@@ -48,13 +47,11 @@ public class TherapieplanToGeneticCounsellingRequestMapper extends ProcedureMapp
             return Optional.empty();
         }
 
-        var formatter = new SimpleDateFormat("yyyy-MM-dd");
-
         return Optional.of(
                 GeneticCounsellingRequest.builder()
                         .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
                         .withPatient(getPatientId(procedure))
-                        .withIssuedOn(formatter.format(procedure.getStartDate()))
+                        .withIssuedOn(dateFormat().format(procedure.getStartDate()))
                         .withReason(procedure.getValue("humangenberbegruendung").getString())
                         .build()
         );

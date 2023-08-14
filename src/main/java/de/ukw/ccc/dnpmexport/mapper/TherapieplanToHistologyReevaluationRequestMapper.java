@@ -28,7 +28,6 @@ import de.itc.onkostar.api.Procedure;
 import de.itc.onkostar.api.ProcedureEditStateType;
 import de.ukw.ccc.bwhc.dto.HistologyReevaluationRequest;
 
-import java.text.SimpleDateFormat;
 import java.util.Optional;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
@@ -49,12 +48,10 @@ public class TherapieplanToHistologyReevaluationRequestMapper extends ProcedureM
             return Optional.empty();
         }
 
-        var formatter = new SimpleDateFormat("yyyy-MM-dd");
-
         var builder = HistologyReevaluationRequest.builder()
                 .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
                 .withPatient(getPatientId(procedure))
-                .withIssuedOn(formatter.format(procedure.getStartDate()));
+                .withIssuedOn(dateFormat().format(procedure.getStartDate()));
 
         var probe = mapperUtils.onkostarApi().getProcedure(procedure.getValue("refreevaltumorprobe").getInt());
         if (null != probe && probe.getId() > 0 && probe.getEditState() == ProcedureEditStateType.COMPLETED) {

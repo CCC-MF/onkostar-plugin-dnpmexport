@@ -28,7 +28,6 @@ import de.itc.onkostar.api.Procedure;
 import de.itc.onkostar.api.ProcedureEditStateType;
 import de.ukw.ccc.bwhc.dto.RebiopsyRequest;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -51,8 +50,6 @@ public class TherapieplanToRebiopsyRequestMapper extends ProcedureMapper<List<Re
             return List.of();
         }
 
-        var formatter = new SimpleDateFormat("yyyy-MM-dd");
-
         return mapperUtils.onkostarApi().getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM UF Rebiopsie").stream()
                 .filter(p -> p.getParentProcedureId() == procedure.getId())
                 .filter(p ->
@@ -63,7 +60,7 @@ public class TherapieplanToRebiopsyRequestMapper extends ProcedureMapper<List<Re
                     var builder = RebiopsyRequest.builder()
                             .withId(mapperUtils.anonymizeId(p.getId().toString()))
                             .withPatient(getPatientId(procedure))
-                            .withIssuedOn(formatter.format(procedure.getStartDate()));
+                            .withIssuedOn(dateFormat().format(procedure.getStartDate()));
 
                     var probe = mapperUtils.onkostarApi().getProcedure(p.getValue("refmolekulargenetik").getInt());
                     if (null != probe && probe.getId() > 0 && probe.getEditState() == ProcedureEditStateType.COMPLETED) {

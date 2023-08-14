@@ -27,7 +27,6 @@ package de.ukw.ccc.dnpmexport.mapper;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.*;
 
-import java.text.SimpleDateFormat;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -50,13 +49,11 @@ public class TherapieplanToCarePlanMapper extends ProcedureMapper<Optional<CareP
             return Optional.empty();
         }
 
-        var formatter = new SimpleDateFormat("yyyy-MM-dd");
-
         var protokollauszug = procedure.getValue("protokollauszug");
 
         var carePlanBuilder = CarePlan.builder()
                 .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
-                .withIssuedOn(formatter.format(procedure.getStartDate()))
+                .withIssuedOn(dateFormat().format(procedure.getStartDate()))
                 .withPatient(getPatientId(procedure))
                 .withDescription(protokollauszug == null ? "" : protokollauszug.getString())
                 .withDiagnosis(mapperUtils.anonymizeId(procedure.getDiseaseIds().get(0).toString()));
@@ -67,7 +64,7 @@ public class TherapieplanToCarePlanMapper extends ProcedureMapper<Optional<CareP
                     NoTargetFinding.builder()
                             .withDiagnosis(mapperUtils.anonymizeId(procedure.getDiseaseIds().get(0).toString()))
                             .withPatient(getPatientId(procedure))
-                            .withIssuedOn(formatter.format(procedure.getStartDate()))
+                            .withIssuedOn(dateFormat().format(procedure.getStartDate()))
                             .build()
             );
         }

@@ -27,7 +27,6 @@ package de.ukw.ccc.dnpmexport.mapper;
 import de.itc.onkostar.api.Disease;
 import de.ukw.ccc.bwhc.dto.Diagnosis;
 
-import java.text.SimpleDateFormat;
 import java.util.Optional;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
@@ -42,12 +41,10 @@ public class DiseaseToDiagnoseMapper implements Mapper<Disease, Optional<Diagnos
 
     @Override
     public Optional<Diagnosis> apply(Disease disease) {
-        var formatter = new SimpleDateFormat("yyyy-MM-dd");
-
         var builder = Diagnosis.builder()
                 .withId(mapperUtils.anonymizeId(disease.getId().toString()))
                 .withPatient(getPatientId(disease))
-                .withRecordedOn(formatter.format(disease.getDiagnosisDate()));
+                .withRecordedOn(dateFormat().format(disease.getDiagnosisDate()));
 
         mapperUtils.getIcd10(disease).ifPresent(builder::withIcd10);
         mapperUtils.getIcdO3T(disease).ifPresent(builder::withIcdO3T);

@@ -19,10 +19,15 @@
 
 package de.ukw.ccc.dnpmexport.mapper;
 
+import java.text.SimpleDateFormat;
 import java.util.function.Function;
 
 public interface Mapper<S, D> extends Function<S, D> {
 
     D apply(S source);
+
+    default SimpleDateFormat dateFormat() {
+        return new SimpleDateFormat("yyyy-MM-dd");
+    }
 
 }

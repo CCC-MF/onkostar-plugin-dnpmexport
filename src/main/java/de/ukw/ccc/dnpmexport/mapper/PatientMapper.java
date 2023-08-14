@@ -27,7 +27,6 @@ package de.ukw.ccc.dnpmexport.mapper;
 import de.itc.onkostar.api.Patient;
 import de.itc.onkostar.api.Sex;
 
-import java.text.SimpleDateFormat;
 import java.util.Optional;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
@@ -40,15 +39,13 @@ public class PatientMapper implements Mapper<Patient, Optional<de.ukw.ccc.bwhc.d
             return Optional.empty();
         }
 
-        var formatter = new SimpleDateFormat("yyyy-MM");
-
         var patientBuilder = de.ukw.ccc.bwhc.dto.Patient.builder()
                 .withId(getPatientId(patient))
-                .withBirthDate(formatter.format(patient.getBirthdate()))
+                .withBirthDate(dateFormat().format(patient.getBirthdate()))
                 .withGender(map(patient.getSex()));
 
         if (null != patient.getDeathdate()) {
-            patientBuilder.withDateOfDeath(formatter.format(patient.getDeathdate()));
+            patientBuilder.withDateOfDeath(dateFormat().format(patient.getDeathdate()));
         }
 
         return Optional.of(patientBuilder.build());

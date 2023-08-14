@@ -29,7 +29,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.*;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -55,8 +54,6 @@ public class TherapieplanToRecommendationMapper extends ProcedureMapper<List<Rec
         if (procedure.getDiseases().size() != 1) {
             return List.of();
         }
-
-        var formatter = new SimpleDateFormat("yyyy-MM-dd");
 
         return mapperUtils.onkostarApi()
                 .getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM UF Einzelempfehlung")

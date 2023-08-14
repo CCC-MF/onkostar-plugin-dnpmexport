@@ -32,7 +32,6 @@ import de.ukw.ccc.bwhc.dto.StudyInclusionRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,8 +58,6 @@ public class TherapieplanToStudyInclusionMapper extends ProcedureMapper<List<Stu
         if (procedure.getDiseases().size() != 1) {
             return List.of();
         }
-
-        var formatter = new SimpleDateFormat("yyyy-MM-dd");
 
         return mapperUtils.onkostarApi()
                 .getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM UF Einzelempfehlung")
