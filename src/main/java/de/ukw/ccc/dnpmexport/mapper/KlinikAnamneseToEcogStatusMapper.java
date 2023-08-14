@@ -30,17 +30,14 @@ import de.ukw.ccc.bwhc.dto.Ecogstatus;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
-public class KlinikAnamneseToEcogStatusMapper implements Function<Procedure, List<Ecogstatus>> {
-
-    private final MapperUtils mapperUtils;
+public class KlinikAnamneseToEcogStatusMapper extends ProcedureMapper<List<Ecogstatus>> {
 
     public KlinikAnamneseToEcogStatusMapper(final MapperUtils mapperUtils) {
-        this.mapperUtils = mapperUtils;
+        super(mapperUtils);
     }
 
     @Override

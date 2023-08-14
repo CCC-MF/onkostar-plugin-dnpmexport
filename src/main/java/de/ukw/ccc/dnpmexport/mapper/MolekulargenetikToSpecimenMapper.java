@@ -29,16 +29,13 @@ import de.ukw.ccc.bwhc.dto.Collection;
 import de.ukw.ccc.bwhc.dto.Specimens;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
-public class MolekulargenetikToSpecimenMapper implements Function<Procedure, Optional<Specimens>> {
-
-    private final MapperUtils mapperUtils;
+public class MolekulargenetikToSpecimenMapper extends ProcedureMapper<Optional<Specimens>> {
 
     public MolekulargenetikToSpecimenMapper(final MapperUtils mapperUtils) {
-        this.mapperUtils = mapperUtils;
+        super(mapperUtils);
     }
 
     @Override

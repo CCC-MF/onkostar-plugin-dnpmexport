@@ -29,11 +29,10 @@ import de.ukw.ccc.bwhc.dto.Diagnosis;
 
 import java.text.SimpleDateFormat;
 import java.util.Optional;
-import java.util.function.Function;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
-public class DiseaseToDiagnoseMapper implements Function<Disease, Optional<Diagnosis>> {
+public class DiseaseToDiagnoseMapper implements Mapper<Disease, Optional<Diagnosis>> {
 
     private final MapperUtils mapperUtils;
 

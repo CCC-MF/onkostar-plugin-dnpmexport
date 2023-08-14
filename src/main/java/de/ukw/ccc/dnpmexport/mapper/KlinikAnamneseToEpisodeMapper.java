@@ -29,16 +29,13 @@ import de.ukw.ccc.bwhc.dto.Episode;
 import de.ukw.ccc.bwhc.dto.PeriodStart;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
-public class KlinikAnamneseToEpisodeMapper implements Function<Procedure, Optional<Episode>> {
-
-    private final MapperUtils mapperUtils;
+public class KlinikAnamneseToEpisodeMapper extends ProcedureMapper<Optional<Episode>> {
 
     public KlinikAnamneseToEpisodeMapper(final MapperUtils mapperUtils) {
-        this.mapperUtils = mapperUtils;
+        super(mapperUtils);
     }
 
     @Override

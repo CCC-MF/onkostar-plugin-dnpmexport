@@ -30,16 +30,13 @@ import de.ukw.ccc.bwhc.dto.HistologyReevaluationRequest;
 
 import java.text.SimpleDateFormat;
 import java.util.Optional;
-import java.util.function.Function;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
-public class TherapieplanToHistologyReevaluationRequestMapper implements Function<Procedure, Optional<HistologyReevaluationRequest>> {
-
-    private final MapperUtils mapperUtils;
+public class TherapieplanToHistologyReevaluationRequestMapper extends ProcedureMapper<Optional<HistologyReevaluationRequest>> {
 
     public TherapieplanToHistologyReevaluationRequestMapper(final MapperUtils mapperUtils) {
-        this.mapperUtils = mapperUtils;
+        super(mapperUtils);
     }
 
     @Override

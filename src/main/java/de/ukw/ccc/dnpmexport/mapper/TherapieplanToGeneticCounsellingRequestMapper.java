@@ -29,16 +29,13 @@ import de.ukw.ccc.bwhc.dto.GeneticCounsellingRequest;
 
 import java.text.SimpleDateFormat;
 import java.util.Optional;
-import java.util.function.Function;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
-public class TherapieplanToGeneticCounsellingRequestMapper implements Function<Procedure, Optional<GeneticCounsellingRequest>> {
-
-    private final MapperUtils mapperUtils;
+public class TherapieplanToGeneticCounsellingRequestMapper extends ProcedureMapper<Optional<GeneticCounsellingRequest>> {
 
     public TherapieplanToGeneticCounsellingRequestMapper(final MapperUtils mapperUtils) {
-        this.mapperUtils = mapperUtils;
+        super(mapperUtils);
     }
 
     @Override

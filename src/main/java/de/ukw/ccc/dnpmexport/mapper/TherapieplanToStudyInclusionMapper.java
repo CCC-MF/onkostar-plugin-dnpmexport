@@ -34,21 +34,18 @@ import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
-public class TherapieplanToStudyInclusionMapper implements Function<Procedure, List<StudyInclusionRequest>> {
+public class TherapieplanToStudyInclusionMapper extends ProcedureMapper<List<StudyInclusionRequest>> {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private final MapperUtils mapperUtils;
 
     private final ObjectMapper objectMapper;
 
     public TherapieplanToStudyInclusionMapper(final MapperUtils mapperUtils) {
-        this.mapperUtils = mapperUtils;
+        super(mapperUtils);
         this.objectMapper = new ObjectMapper();
     }
 

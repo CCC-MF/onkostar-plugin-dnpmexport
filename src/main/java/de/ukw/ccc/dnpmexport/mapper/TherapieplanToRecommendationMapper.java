@@ -32,19 +32,16 @@ import de.ukw.ccc.bwhc.dto.*;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
-public class TherapieplanToRecommendationMapper implements Function<Procedure, List<Recommendation>> {
-
-    private final MapperUtils mapperUtils;
+public class TherapieplanToRecommendationMapper extends ProcedureMapper<List<Recommendation>> {
 
     private final ObjectMapper objectMapper;
 
     public TherapieplanToRecommendationMapper(final MapperUtils mapperUtils) {
-        this.mapperUtils = mapperUtils;
+        super(mapperUtils);
         this.objectMapper = new ObjectMapper();
     }
 

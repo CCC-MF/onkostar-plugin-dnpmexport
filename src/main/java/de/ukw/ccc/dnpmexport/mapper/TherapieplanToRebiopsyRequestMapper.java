@@ -31,17 +31,14 @@ import de.ukw.ccc.bwhc.dto.RebiopsyRequest;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
-public class TherapieplanToRebiopsyRequestMapper implements Function<Procedure, List<RebiopsyRequest>> {
-
-    private final MapperUtils mapperUtils;
+public class TherapieplanToRebiopsyRequestMapper extends ProcedureMapper<List<RebiopsyRequest>> {
 
     public TherapieplanToRebiopsyRequestMapper(final MapperUtils mapperUtils) {
-        this.mapperUtils = mapperUtils;
+        super(mapperUtils);
     }
 
     @Override

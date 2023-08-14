@@ -29,17 +29,14 @@ import de.ukw.ccc.bwhc.dto.FamilyMemberDiagnosis;
 import de.ukw.ccc.bwhc.dto.Relationship;
 
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
-public class KlinikAnamneseToFamilyMemberDiagnosisMapper implements Function<Procedure, List<FamilyMemberDiagnosis>> {
-
-    private final MapperUtils mapperUtils;
+public class KlinikAnamneseToFamilyMemberDiagnosisMapper extends ProcedureMapper<List<FamilyMemberDiagnosis>> {
 
     public KlinikAnamneseToFamilyMemberDiagnosisMapper(final MapperUtils mapperUtils) {
-        this.mapperUtils = mapperUtils;
+        super(mapperUtils);
     }
 
     @Override

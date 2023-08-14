@@ -29,11 +29,10 @@ import de.itc.onkostar.api.Sex;
 
 import java.text.SimpleDateFormat;
 import java.util.Optional;
-import java.util.function.Function;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
-public class PatientMapper implements Function<Patient, Optional<de.ukw.ccc.bwhc.dto.Patient>> {
+public class PatientMapper implements Mapper<Patient, Optional<de.ukw.ccc.bwhc.dto.Patient>> {
 
     @Override
     public Optional<de.ukw.ccc.bwhc.dto.Patient> apply(Patient patient) {

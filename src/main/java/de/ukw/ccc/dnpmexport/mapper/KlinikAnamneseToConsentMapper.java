@@ -28,16 +28,13 @@ import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.Consent;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 import static de.ukw.ccc.dnpmexport.mapper.MapperUtils.getPatientId;
 
-public class KlinikAnamneseToConsentMapper implements Function<Procedure, Optional<Consent>> {
-
-    private final MapperUtils mapperUtils;
+public class KlinikAnamneseToConsentMapper extends ProcedureMapper<Optional<Consent>> {
 
     public KlinikAnamneseToConsentMapper(final MapperUtils mapperUtils) {
-        this.mapperUtils = mapperUtils;
+        super(mapperUtils);
     }
 
     @Override
