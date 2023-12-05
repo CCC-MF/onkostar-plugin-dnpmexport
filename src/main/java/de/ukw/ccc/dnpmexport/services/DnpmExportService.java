@@ -24,6 +24,7 @@
 
 package de.ukw.ccc.dnpmexport.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.*;
@@ -190,6 +191,10 @@ public class DnpmExportService {
         result.getHistologyReevaluationRequests().addAll(getHistologyReevaluationRequests(procedure));
         result.getGeneticCounsellingRequests().addAll(getGeneticCounsellingRequests(procedure));
 
+        /* MolGen */
+
+        result.getNgsReports().addAll(getNgsReports(procedure));
+
         return Optional.of(result);
     }
 
@@ -270,6 +275,21 @@ public class DnpmExportService {
                 .flatMap(
                         p -> new TherapieplanToGeneticCounsellingRequestMapper(mapperUtils).apply(p).stream()
                 )
+                .collect(Collectors.toList());
+    }
+
+    private List<NgsReport> getNgsReports(Procedure procedure) {
+        return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
+                .flatMap(
+                        mapperUtils::getMolekulargenetikProcedureIdsForTherapieplan
+                )
+                .map(onkostarApi::getProcedure)
+                .filter(Objects::nonNull)
+                .map(
+                        p -> new MolekulargenetikToNgsReportMapper(mapperUtils).apply(p)
+                )
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .collect(Collectors.toList());
     }
 

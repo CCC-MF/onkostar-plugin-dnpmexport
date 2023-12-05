@@ -65,6 +65,7 @@ public class TherapieplanToRecommendationMapper extends TherapieplanMapper<List<
                             .withIssuedOn(issuedOn(p))
                             .withLevelOfEvidence(levelOfEvidence(p))
                             .withPriority(priority(p))
+                            .withNgsReport(anonymizeString(procedure.getValue("refosmolekulargenetik").getString()))
                             //.withSupportingVariants() // TODO: Einfügen, wenn OS.Molekulargenetik fertig
                             ;
                     var recommendation = builder.build();
