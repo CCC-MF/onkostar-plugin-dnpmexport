@@ -24,7 +24,6 @@
 
 package de.ukw.ccc.dnpmexport.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.*;
@@ -39,6 +38,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -86,6 +86,9 @@ public class DnpmExportService {
             var uri = URI.create(exportUrl);
             var headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            if (uri.getUserInfo() != null) {
+                headers.set(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString(uri.getUserInfo().getBytes()));
+            }
 
             var entityReq = new HttpEntity<>(mtbFile, headers);
 
@@ -111,6 +114,9 @@ public class DnpmExportService {
             var uri = URI.create(exportUrl + "/" + patientId);
             var headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            if (uri.getUserInfo() != null) {
+                headers.set(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString(uri.getUserInfo().getBytes()));
+            }
 
             var entityReq = new HttpEntity<>(null, headers);
 
