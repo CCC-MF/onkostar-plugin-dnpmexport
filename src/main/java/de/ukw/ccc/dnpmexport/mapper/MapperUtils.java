@@ -205,9 +205,9 @@ public class MapperUtils {
         var base32 = new Base32();
         var prefix = this.onkostarApi.getGlobalSetting("dnpmexport_prefix");
         if (null != prefix) {
-            return String.format("%s_%s", prefix, base32.encodeToString(DigestUtils.sha256(id)).substring(0, 41).toLowerCase());
+            return String.format("%s%s", prefix, base32.encodeToString(DigestUtils.sha256(id)).substring(0, 41).toLowerCase());
         }
-        return String.format("UNKNOWN_%s", base32.encodeToString(DigestUtils.sha256(id)).substring(0, 41).toLowerCase());
+        return String.format("UNKNOWN%s", base32.encodeToString(DigestUtils.sha256(id)).substring(0, 41).toLowerCase());
     }
 
     public static String getPatientId(Patient patient) {
