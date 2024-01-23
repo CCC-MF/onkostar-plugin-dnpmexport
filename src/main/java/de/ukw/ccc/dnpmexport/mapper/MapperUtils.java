@@ -189,7 +189,6 @@ public class MapperUtils {
         switch (mtb.getFormName()) {
             case "OS.Tumorkonferenz":
             case "OS.Tumorkonferenz.VarianteUKW":
-                return mtb.getValue("Datum").getString();
             default:
                 return mtb.getValue("Datum").getString();
         }
