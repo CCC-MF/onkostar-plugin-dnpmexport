@@ -12,8 +12,8 @@ Zum Betrieb dieses Plugins ist die Angabe der URL der Zielanwendung erforderlich
 Dies lässt sich initial durch folgende Datenbankanfrage anlegen, später dann in den allgemeinen Einstellungen von Onkostar auch ändern.
 
 ```
-INSERT INTO einstellung (name, wert, kategorie, beschreibung) VALUES('dnpmexport_url', 'http://localhost:9000/bwhc/etl/api/MTBFile', 'DNPM', 'DNPM-Export - URL');
-INSERT INTO einstellung (name, wert, kategorie, beschreibung) VALUES('dnpmexport_prefix', 'TEST', 'DNPM', 'DNPM-Export - Prefix');
+INSERT INTO einstellung (name, wert, kategorie, beschreibung) VALUES('dnpmexport_url', 'http://localhost:9000/bwhc/etl/api/MTBFile', 'System', 'DNPM-Export - URL');
+INSERT INTO einstellung (name, wert, kategorie, beschreibung) VALUES('dnpmexport_prefix', 'TEST', 'System', 'DNPM-Export - Prefix');
 ```
 
 Das Plugin ist durch entsprechende Konfiguration der Export-URL auch in der Lage, Daten - im MTBFile-JSON-Format - an das bwHC-Backend zu senden.
