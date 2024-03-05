@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Comprehensive Cancer Center Mainfranken
+ * Copyright (c) 2024 Comprehensive Cancer Center Mainfranken
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -120,7 +121,7 @@ public class DnpmExportService {
 
             var entityReq = new HttpEntity<>(null, headers);
 
-            restTemplate.delete(uri.toString(), entityReq, String.class);
+            restTemplate.exchange(uri, HttpMethod.DELETE, entityReq, String.class);
             return true;
         } catch (IllegalArgumentException e) {
             logger.error("Not a valid URI to delete from: '{}'", exportUrl);
