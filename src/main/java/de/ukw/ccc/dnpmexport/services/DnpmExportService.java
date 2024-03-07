@@ -27,6 +27,7 @@ package de.ukw.ccc.dnpmexport.services;
 import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.*;
+import de.ukw.ccc.dnpmexport.ExportException;
 import de.ukw.ccc.dnpmexport.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +63,7 @@ public class DnpmExportService {
         this.restTemplate = new RestTemplate();
     }
 
-    public void export(Procedure procedure) {
+    public void export(Procedure procedure) throws ExportException {
         if (procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
             if (hasConsent(procedure).orElse(false)) {
                 exportKlinikAnamneseRelatedData(procedure).ifPresent(this::sendMtbFileRequest);
@@ -80,7 +81,7 @@ public class DnpmExportService {
         }
     }
 
-    private boolean sendMtbFileRequest(MtbFile mtbFile) {
+    private void sendMtbFileRequest(MtbFile mtbFile) throws ExportException {
         var exportUrl = onkostarApi.getGlobalSetting("dnpmexport_url");
 
         try {
@@ -96,19 +97,18 @@ public class DnpmExportService {
             var r = restTemplate.postForEntity(uri, entityReq, String.class);
             if (!r.getStatusCode().is2xxSuccessful()) {
                 logger.warn("Error sending to remote system: {}", r.getBody());
-                return false;
+                throw new ExportException("Kann Daten nicht an das externe System senden");
             }
-
-            return true;
         } catch (IllegalArgumentException e) {
             logger.error("Not a valid URI to export to: '{}'", exportUrl);
+            throw new ExportException("Keine gültige Adresse für das externe System");
         } catch (RestClientException e) {
             logger.error("Cannot send data to remote system", e);
+            throw new ExportException("Kann Daten nicht an das externe System senden");
         }
-        return false;
     }
 
-    private boolean sendDeleteRequest(String patientId) {
+    private void sendDeleteRequest(String patientId) throws ExportException {
         var exportUrl = onkostarApi.getGlobalSetting("dnpmexport_url");
 
         try {
@@ -122,13 +122,13 @@ public class DnpmExportService {
             var entityReq = new HttpEntity<>(null, headers);
 
             restTemplate.exchange(uri, HttpMethod.DELETE, entityReq, String.class);
-            return true;
         } catch (IllegalArgumentException e) {
-            logger.error("Not a valid URI to delete from: '{}'", exportUrl);
+            logger.error("Not a valid URI to export to: '{}'", exportUrl);
+            throw new ExportException("Keine gültige Adresse für das externe System");
         } catch (RestClientException e) {
-            logger.error("Cannot delete data from remote system", e);
+            logger.error("Cannot send data to remote system", e);
+            throw new ExportException("Kann Daten nicht an das externe System senden");
         }
-        return false;
     }
 
     private Optional<Boolean> hasConsent(Procedure procedure) {
