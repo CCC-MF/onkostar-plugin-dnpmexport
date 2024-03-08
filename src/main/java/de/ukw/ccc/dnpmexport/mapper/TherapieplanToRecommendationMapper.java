@@ -58,6 +58,7 @@ public class TherapieplanToRecommendationMapper extends TherapieplanMapper<List<
                 .stream()
                 .filter(p -> p.getParentProcedureId() == procedure.getId())
                 .map(p -> {
+                    var molgenref = procedure.getValue("refosmolekulargenetik");
                     var builder = Recommendation.builder()
                             .withId(anonymizeId(p))
                             .withPatient(getPatientId(procedure))
@@ -65,9 +66,13 @@ public class TherapieplanToRecommendationMapper extends TherapieplanMapper<List<
                             .withIssuedOn(issuedOn(p))
                             .withLevelOfEvidence(levelOfEvidence(p))
                             .withPriority(priority(p))
-                            .withNgsReport(anonymizeString(procedure.getValue("refosmolekulargenetik").getString()))
                             //.withSupportingVariants() // TODO: Einfügen, wenn OS.Molekulargenetik fertig
                             ;
+
+                    if (null != molgenref) {
+                        builder.withNgsReport(anonymizeString(molgenref.getString()));
+                    }
+
                     var recommendation = builder.build();
                     recommendation.getMedication().addAll(medications(p));
 
