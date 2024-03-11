@@ -14,7 +14,11 @@ Dies lässt sich initial durch folgende Datenbankanfrage anlegen, später dann i
 ```
 INSERT INTO einstellung (name, wert, kategorie, beschreibung) VALUES('dnpmexport_url', 'http://localhost:9000/bwhc/etl/api/MTBFile', 'System', 'DNPM-Export - URL');
 INSERT INTO einstellung (name, wert, kategorie, beschreibung) VALUES('dnpmexport_prefix', 'TEST', 'System', 'DNPM-Export - Prefix');
+INSERT INTO einstellung (name, wert, kategorie, optionen, beschreibung) VALUES('dnpmexport_export_consent_rejected', 'false', 'System', '[{"key": "true", "value": "Ja"},{"key": "false", "value": "Nein"}]', 'Exportiere MTB-Daten ohne Consent-Zustimmung');
 ```
+
+Ein Export von Daten ohne Consent-Zustimmung ist durch die Einstellung *Exportiere MTB-Daten ohne Consent-Zustimmung* möglich.
+Eine entsprechende Behandlung der Daten findet im ETL-Processor statt.
 
 Das Plugin ist durch entsprechende Konfiguration der Export-URL auch in der Lage, Daten - im MTBFile-JSON-Format - an das bwHC-Backend zu senden.
 **Hiervon wird jedoch abgeraten, da ohne eine weitere Behandlung der Informationen die Patienten-ID im Klartext übertragen wird**

@@ -57,15 +57,15 @@ public class DnpmExportService {
 
     private final RestTemplate restTemplate;
 
-    public DnpmExportService(final IOnkostarApi onkostarApi) {
+    public DnpmExportService(final IOnkostarApi onkostarApi, final RestTemplate restTemplate) {
         this.onkostarApi = onkostarApi;
         this.mapperUtils = new MapperUtils(onkostarApi);
-        this.restTemplate = new RestTemplate();
+        this.restTemplate = restTemplate;
     }
 
     public void export(Procedure procedure) throws ExportException {
         if (procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
-            if (hasConsent(procedure).orElse(false)) {
+            if (shouldExportMtbFile(procedure).orElse(false)) {
                 exportKlinikAnamneseRelatedData(procedure).ifPresent(this::sendMtbFileRequest);
             } else {
                 sendDeleteRequest(procedure.getPatient().getPatientId());
@@ -73,7 +73,7 @@ public class DnpmExportService {
         } else if (procedure.getFormName().equals("DNPM Therapieplan")) {
             var procedureId = procedure.getValue("refdnpmklinikanamnese").getInt();
             var p = onkostarApi.getProcedure(procedureId);
-            if (null != p && hasConsent(p).orElse(false)) {
+            if (null != p && shouldExportMtbFile(p).orElse(false)) {
                 exportKlinikAnamneseRelatedData(onkostarApi.getProcedure(procedureId)).ifPresent(this::sendMtbFileRequest);
             } else {
                 sendDeleteRequest(procedure.getPatient().getPatientId());
@@ -131,7 +131,7 @@ public class DnpmExportService {
         }
     }
 
-    private Optional<Boolean> hasConsent(Procedure procedure) {
+    private Optional<Boolean> shouldExportMtbFile(Procedure procedure) {
         if (null == procedure || !procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
             logger.warn("Ignoring - not of form 'DNPM Klinik/Anamnese'!");
             return Optional.empty();
@@ -139,7 +139,12 @@ public class DnpmExportService {
 
         var consent = new KlinikAnamneseToConsentMapper(mapperUtils).apply(procedure);
 
-        return Optional.of(consent.isPresent() && consent.get().getStatus() == Consent.Status.ACTIVE);
+        var exportWithConsentRejected = null != onkostarApi.getGlobalSetting("dnpmexport_export_consent_rejected")
+                && onkostarApi.getGlobalSetting("dnpmexport_export_consent_rejected").equals("true");
+
+        return Optional.of(
+                exportWithConsentRejected || (consent.isPresent() && consent.get().getStatus() == Consent.Status.ACTIVE)
+        );
     }
 
     private Optional<MtbFile> exportKlinikAnamneseRelatedData(Procedure procedure) {
@@ -158,12 +163,15 @@ public class DnpmExportService {
         var episode = new KlinikAnamneseToEpisodeMapper(mapperUtils).apply(procedure);
         var diagnose = new DiseaseToDiagnoseMapper(mapperUtils).apply(procedure.getDiseases().get(0));
 
+        var exportWithConsentRejected = null != onkostarApi.getGlobalSetting("dnpmexport_export_consent_rejected")
+                && onkostarApi.getGlobalSetting("dnpmexport_export_consent_rejected").equals("true");
+
         var mtbFile = MtbFile.builder();
-        if (consent.isEmpty() || consent.get().getStatus() != Consent.Status.ACTIVE) {
-            logger.warn("Ignoring - No conent!");
+        if (!exportWithConsentRejected && (consent.isEmpty() || consent.get().getStatus() != Consent.Status.ACTIVE)) {
+            logger.warn("Ignoring - No consent!");
             return Optional.empty();
         }
-        mtbFile.withConsent(consent.get());
+        consent.ifPresent(mtbFile::withConsent);
 
         /* Patient **/
         if (patient.isEmpty()) {
