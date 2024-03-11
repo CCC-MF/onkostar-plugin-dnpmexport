@@ -57,10 +57,10 @@ public class DnpmExportService {
 
     private final RestTemplate restTemplate;
 
-    public DnpmExportService(final IOnkostarApi onkostarApi) {
+    public DnpmExportService(final IOnkostarApi onkostarApi, final RestTemplate restTemplate) {
         this.onkostarApi = onkostarApi;
         this.mapperUtils = new MapperUtils(onkostarApi);
-        this.restTemplate = new RestTemplate();
+        this.restTemplate = restTemplate;
     }
 
     public void export(Procedure procedure) throws ExportException {
@@ -163,12 +163,15 @@ public class DnpmExportService {
         var episode = new KlinikAnamneseToEpisodeMapper(mapperUtils).apply(procedure);
         var diagnose = new DiseaseToDiagnoseMapper(mapperUtils).apply(procedure.getDiseases().get(0));
 
+        var exportWithConsentRejected = null != onkostarApi.getGlobalSetting("dnpmexport_export_consent_rejected")
+                && onkostarApi.getGlobalSetting("dnpmexport_export_consent_rejected").equals("true");
+
         var mtbFile = MtbFile.builder();
-        if (consent.isEmpty() || consent.get().getStatus() != Consent.Status.ACTIVE) {
-            logger.warn("Ignoring - No conent!");
+        if (!exportWithConsentRejected && (consent.isEmpty() || consent.get().getStatus() != Consent.Status.ACTIVE)) {
+            logger.warn("Ignoring - No consent!");
             return Optional.empty();
         }
-        mtbFile.withConsent(consent.get());
+        consent.ifPresent(mtbFile::withConsent);
 
         /* Patient **/
         if (patient.isEmpty()) {
