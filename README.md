@@ -14,6 +14,7 @@ Dies lässt sich initial durch folgende Datenbankanfrage anlegen, später dann i
 ```
 INSERT INTO einstellung (name, wert, kategorie, beschreibung) VALUES('dnpmexport_url', 'http://localhost:9000/bwhc/etl/api/MTBFile', 'System', 'DNPM-Export - URL');
 INSERT INTO einstellung (name, wert, kategorie, beschreibung) VALUES('dnpmexport_prefix', 'TEST', 'System', 'DNPM-Export - Prefix');
+INSERT INTO einstellung (name, wert, kategorie, optionen, beschreibung) VALUES('dnpmexport_export_consent_rejected', 'true', 'System', '[{"key": "true", "value": "Ja"},{"key": "false", "value": "Nein"}]', 'Exportiere MTB-Daten ohne Consent-Zustimmung');
 ```
 
 Das Plugin ist durch entsprechende Konfiguration der Export-URL auch in der Lage, Daten - im MTBFile-JSON-Format - an das bwHC-Backend zu senden.
