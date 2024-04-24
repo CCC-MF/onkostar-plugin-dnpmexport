@@ -20,14 +20,17 @@
 
 package de.ukw.ccc.dnpmexport.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Item;
+import de.ukw.ccc.bwhc.dto.MtbFile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -36,6 +39,7 @@ import java.net.URI;
 import java.util.Date;
 
 import static de.ukw.ccc.dnpmexport.test.TestUtils.createKlinikAnamneseProcedure;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -72,7 +76,7 @@ public class DnpmExportServiceTest {
     }
 
     @Test
-    void shouldExportMtbFileWithConsentActive() {
+    void shouldExportMtbFileWithConsentActive() throws JsonProcessingException {
         doAnswer(invocationOnMock -> {
             var name = invocationOnMock.getArgument(0, String.class);
             return defaultSetting(name);
@@ -82,6 +86,7 @@ public class DnpmExportServiceTest {
         procedure.setValue("ConsentStatusEinwilligungDNPM", new Item("ConsentStatusEinwilligungDNPM", "active"));
         procedure.setValue("DatumErstdiagnose", new Item("DatumErstdiagnose", new Date()));
         procedure.setValue("ICD10", new Item("ICD10", "F79.9"));
+        procedure.setValue("ICDO3Lokalisation", new Item("ICDO3Lokalisation", "F79.2"));
         procedure.setValue("ICDO3Histologie", new Item("ICDO3Histologie", "8000/1"));
         procedure.setValue("WHOGrad", new Item("WHOGrad", "I"));
 
@@ -89,7 +94,11 @@ public class DnpmExportServiceTest {
 
         this.dnpmExportService.export(procedure);
 
-        verify(restTemplate, times(1)).postForEntity(any(URI.class), any(), any());
+        var captor = ArgumentCaptor.forClass(HttpEntity.class);
+        verify(restTemplate, times(1)).postForEntity(any(URI.class), captor.capture(), any());
+
+        var body = captor.getValue().getBody();
+        assertThat(body).isInstanceOf(MtbFile.class);
     }
 
     @Test
@@ -106,6 +115,7 @@ public class DnpmExportServiceTest {
         procedure.setValue("ConsentStatusEinwilligungDNPM", new Item("ConsentStatusEinwilligungDNPM", "active"));
         procedure.setValue("DatumErstdiagnose", new Item("DatumErstdiagnose", new Date()));
         procedure.setValue("ICD10", new Item("ICD10", "F79.9"));
+        procedure.setValue("ICDO3Lokalisation", new Item("ICDO3Lokalisation", "F79.9"));
         procedure.setValue("ICDO3Histologie", new Item("ICDO3Histologie", "8000/1"));
         procedure.setValue("WHOGrad", new Item("WHOGrad", "I"));
 
