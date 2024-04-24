@@ -1,4 +1,5 @@
-libs/
+libs/*
+!libs/.gitkeep
 
 target/
 !.mvn/wrapper/maven-wrapper.jar
