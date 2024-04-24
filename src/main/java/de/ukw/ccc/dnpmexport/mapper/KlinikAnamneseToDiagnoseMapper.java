@@ -56,8 +56,8 @@ public class KlinikAnamneseToDiagnoseMapper extends KlinikAnamneseMapper<Optiona
             builder.withIcd10(Icd10.builder().withCode(icd10).withVersion(icd10Version).build());
         }
 
-        var icd03T = procedure.getValue("ICDO3Histologie").getString();
-        var icd03TVersion = procedure.getValue("ICDO3Histologie").getPropertyCatalogueVersion();
+        var icd03T = procedure.getValue("ICDO3Lokalisation").getString();
+        var icd03TVersion = procedure.getValue("ICDO3Lokalisation").getPropertyCatalogueVersion();
         if (null != icd03T) {
             builder.withIcdO3T(IcdO3T.builder().withCode(icd03T).withVersion(icd03TVersion).build());
         }
