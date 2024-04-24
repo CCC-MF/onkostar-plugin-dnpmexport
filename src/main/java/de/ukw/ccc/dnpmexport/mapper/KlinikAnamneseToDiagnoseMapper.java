@@ -62,7 +62,7 @@ public class KlinikAnamneseToDiagnoseMapper extends KlinikAnamneseMapper<Optiona
             builder.withIcdO3T(IcdO3T.builder().withCode(icd03T).withVersion(icd03TVersion).build());
         }
 
-        var whoGrade = procedure.getValue("WHOGrad").getString();
+        var whoGrade = mapWhoGrade(procedure.getValue("WHOGrad").getString());
         var whoGradeVersion = procedure.getValue("WHOGrad").getPropertyCatalogueVersion();
         if (null != whoGrade) {
             // Todo: Mapping Grading I-IV
@@ -70,6 +70,21 @@ public class KlinikAnamneseToDiagnoseMapper extends KlinikAnamneseMapper<Optiona
         }
 
         return Optional.of(builder.build());
+    }
+
+    private WhoGrade.WHOGrade mapWhoGrade(final String whoGradeValue) {
+        switch (whoGradeValue) {
+            case "I":
+                return WhoGrade.WHOGrade.I;
+            case "II":
+                return WhoGrade.WHOGrade.II;
+            case "III":
+                return WhoGrade.WHOGrade.III;
+            case "IV":
+                return WhoGrade.WHOGrade.IV;
+            default:
+                return null;
+        }
     }
 
 }
