@@ -74,10 +74,10 @@
             <groupId>de.itc</groupId>
             <artifactId>onkostar-api</artifactId>
             <!-- Version bei Update anpassen! -->
-            <version>2.11.1.5</version>
+            <version>2.11.1.6</version>
             <scope>system</scope>
             <!-- Version bei Update anpassen! -->
-            <systemPath>${project.basedir}/libs/onkostar-api-2.11.1.5.jar</systemPath>
+            <systemPath>${project.basedir}/libs/onkostar-api-2.11.1.6.jar</systemPath>
         </dependency>
 
         <!-- Test dependencies -->
