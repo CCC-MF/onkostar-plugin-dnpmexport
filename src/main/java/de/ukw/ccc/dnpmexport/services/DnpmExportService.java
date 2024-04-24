@@ -153,15 +153,10 @@ public class DnpmExportService {
             return Optional.empty();
         }
 
-        if (procedure.getDiseases().size() != 1) {
-            logger.warn("Ignoring - more than one disease!");
-            return Optional.empty();
-        }
-
         var patient = new PatientMapper().apply(procedure.getPatient());
         var consent = new KlinikAnamneseToConsentMapper(mapperUtils).apply(procedure);
         var episode = new KlinikAnamneseToEpisodeMapper(mapperUtils).apply(procedure);
-        var diagnose = new DiseaseToDiagnoseMapper(mapperUtils).apply(procedure.getDiseases().get(0));
+        var diagnose = new KlinikAnamneseToDiagnoseMapper(mapperUtils).apply(procedure);
 
         var exportWithConsentRejected = null != onkostarApi.getGlobalSetting("dnpmexport_export_consent_rejected")
                 && onkostarApi.getGlobalSetting("dnpmexport_export_consent_rejected").equals("true");
@@ -195,7 +190,12 @@ public class DnpmExportService {
 
         var result = mtbFile.build();
 
-        result.getDiagnoses().addAll(getDiagnoses(procedure));
+        // Maps from diagnosis form
+        //result.getDiagnoses().addAll(getDiagnoses(procedure));
+
+        // Maps from Klinik/Anamnese form
+        diagnose.ifPresent(diagnosis -> result.getDiagnoses().add(diagnosis));
+
         result.getCarePlans().addAll(getCarePlans(procedure));
         result.getFamilyMemberDiagnoses().addAll(getFamilyMemberDiagnoses(procedure));
         result.getEcogStatus().addAll(getEcogStatusList(procedure));

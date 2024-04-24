@@ -33,9 +33,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.util.List;
+import java.util.Date;
 
-import static de.ukw.ccc.dnpmexport.test.TestUtils.*;
+import static de.ukw.ccc.dnpmexport.test.TestUtils.createKlinikAnamneseProcedure;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -80,9 +80,11 @@ public class DnpmExportServiceTest {
 
         var procedure = createKlinikAnamneseProcedure(this.onkostarApi);
         procedure.setValue("ConsentStatusEinwilligungDNPM", new Item("ConsentStatusEinwilligungDNPM", "active"));
+        procedure.setValue("DatumErstdiagnose", new Item("DatumErstdiagnose", new Date()));
+        procedure.setValue("ICD10", new Item("ICD10", "F79.9"));
+        procedure.setValue("ICDO3Histologie", new Item("ICDO3Histologie", "8000/1"));
+        procedure.setValue("WHOGrad", new Item("WHOGrad", "I"));
 
-        when(this.onkostarApi.getDiseasesByProcedureId(anyInt())).thenReturn(List.of(createDisease(onkostarApi)));
-        when(this.onkostarApi.getPatient(anyInt())).thenReturn(createPatient(onkostarApi));
         when(this.restTemplate.postForEntity(any(URI.class), any(), any())).thenReturn(ResponseEntity.accepted().build());
 
         this.dnpmExportService.export(procedure);
@@ -101,9 +103,12 @@ public class DnpmExportServiceTest {
         }).when(this.onkostarApi).getGlobalSetting(anyString());
 
         var procedure = createKlinikAnamneseProcedure(this.onkostarApi);
+        procedure.setValue("ConsentStatusEinwilligungDNPM", new Item("ConsentStatusEinwilligungDNPM", "active"));
+        procedure.setValue("DatumErstdiagnose", new Item("DatumErstdiagnose", new Date()));
+        procedure.setValue("ICD10", new Item("ICD10", "F79.9"));
+        procedure.setValue("ICDO3Histologie", new Item("ICDO3Histologie", "8000/1"));
+        procedure.setValue("WHOGrad", new Item("WHOGrad", "I"));
 
-        when(this.onkostarApi.getDiseasesByProcedureId(anyInt())).thenReturn(List.of(createDisease(onkostarApi)));
-        when(this.onkostarApi.getPatient(anyInt())).thenReturn(createPatient(onkostarApi));
         when(this.restTemplate.postForEntity(any(URI.class), any(), any())).thenReturn(ResponseEntity.accepted().build());
 
         this.dnpmExportService.export(procedure);
