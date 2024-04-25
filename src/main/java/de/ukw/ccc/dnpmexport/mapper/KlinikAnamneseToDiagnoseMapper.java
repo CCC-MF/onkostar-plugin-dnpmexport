@@ -45,9 +45,9 @@ public class KlinikAnamneseToDiagnoseMapper extends KlinikAnamneseMapper<Optiona
                 .withId(mapperUtils.anonymizeId(procedure.getId().toString()))
                 .withPatient(getPatientId(procedure));
 
-        var datumErstiagnose = procedure.getValue("DatumErstdiagnose").getDate();
-        if (null != datumErstiagnose) {
-            builder.withRecordedOn(dateFormat().format(datumErstiagnose));
+        var datumErstdiagnose = procedure.getValue("DatumErstdiagnose").getDate();
+        if (null != datumErstdiagnose) {
+            builder.withRecordedOn(dateFormat().format(datumErstdiagnose));
         }
 
         var icd10 = procedure.getValue("ICD10").getString();
