@@ -65,8 +65,7 @@ public class KlinikAnamneseToDiagnoseMapper extends KlinikAnamneseMapper<Optiona
         var whoGrade = mapWhoGrade(procedure.getValue("WHOGrad").getString());
         var whoGradeVersion = procedure.getValue("WHOGrad").getPropertyCatalogueVersion();
         if (null != whoGrade) {
-            // Todo: Mapping Grading I-IV
-            //builder.withWhoGrade(WhoGrade.builder().withCode(...).withVersion(whoGradeVersion).build());
+            builder.withWhoGrade(WhoGrade.builder().withCode(whoGrade).withVersion(whoGradeVersion).build());
         }
 
         return Optional.of(builder.build());

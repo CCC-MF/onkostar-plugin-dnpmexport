@@ -2,6 +2,7 @@ package de.ukw.ccc.dnpmexport.mapper;
 
 import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Item;
+import de.ukw.ccc.bwhc.dto.WhoGrade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,6 +43,7 @@ public class KlinikAnamneseToDiagnoseMapperTest {
         assertThat(diagnose).isNotEmpty();
         assertThat(diagnose.get().getIcd10().getCode()).isEqualTo("F79.9");
         assertThat(diagnose.get().getIcdO3T().getCode()).isEqualTo("F79.2");
+        assertThat(diagnose.get().getWhoGrade().getCode()).isEqualTo(WhoGrade.WHOGrade.I);
     }
 
 }
