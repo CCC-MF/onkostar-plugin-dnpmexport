@@ -213,6 +213,7 @@ public class DnpmExportService {
         /* FollowUp */
 
         result.getClaims().addAll(getClaims(procedure));
+        result.getClaimResponses().addAll(getClaimResponses(procedure));
 
 
         return Optional.of(result);
@@ -323,6 +324,22 @@ public class DnpmExportService {
                 )
                 .map(
                         p -> new FollowUpToClaimMapper(mapperUtils).apply(p)
+                )
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+    }
+
+    private List<ClaimResponse> getClaimResponses(Procedure procedure) {
+        return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
+                .flatMap(
+                        mapperUtils::getEinzelempfehlungRelatedToTherapieplan
+                )
+                .flatMap(
+                        mapperUtils::getFollowUpsRelatedToEinzelempfehlung
+                )
+                .map(
+                        p -> new FollowUpToClaimResponseMapper(mapperUtils).apply(p)
                 )
                 .filter(Optional::isPresent)
                 .map(Optional::get)
