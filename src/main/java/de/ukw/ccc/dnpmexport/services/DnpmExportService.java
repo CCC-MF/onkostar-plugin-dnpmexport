@@ -210,6 +210,11 @@ public class DnpmExportService {
 
         result.getNgsReports().addAll(getNgsReports(procedure));
 
+        /* FollowUp */
+
+        result.getClaims().addAll(getClaims(procedure));
+
+
         return Optional.of(result);
     }
 
@@ -302,6 +307,22 @@ public class DnpmExportService {
                 .filter(Objects::nonNull)
                 .map(
                         p -> new MolekulargenetikToNgsReportMapper(mapperUtils).apply(p)
+                )
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+    }
+
+    private List<Claim> getClaims(Procedure procedure) {
+        return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
+                .flatMap(
+                        mapperUtils::getEinzelempfehlungRelatedToTherapieplan
+                )
+                .flatMap(
+                        mapperUtils::getFollowUpsRelatedToEinzelempfehlung
+                )
+                .map(
+                        p -> new FollowUpToClaimMapper(mapperUtils).apply(p)
                 )
                 .filter(Optional::isPresent)
                 .map(Optional::get)

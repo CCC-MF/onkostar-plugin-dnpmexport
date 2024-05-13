@@ -32,6 +32,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -168,6 +169,72 @@ public class MapperUtils {
      */
     public Stream<Procedure> getTherapieplanRelatedToKlinikAnamnese(Procedure procedure) {
         return getTherapieplanRelatedToKlinikAnamnese(procedure, true);
+    }
+
+    /**
+     * Stream of procedures for 'DNPM UF Einzelempfehlung' related to given procedure for 'DNPM Therapieplan'
+     *
+     * @param procedure  A procedure for 'DNPM Therapieplan'
+     * @param lockedOnly include locked procedures only
+     * @return Stream of procedures
+     */
+    public Stream<Procedure> getEinzelempfehlungRelatedToTherapieplan(Procedure procedure, boolean lockedOnly) {
+        if (!"DNPM Therapieplan".equals(procedure.getFormName())) {
+            logger.warn("Ignoring - not of form 'DNPM Therapieplan'!");
+            return Stream.empty();
+        }
+        if (procedure.getDiseases().size() != 1) {
+            logger.warn("Ignoring - more than one disease!");
+            return Stream.empty();
+        }
+        return onkostarApi.getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM UF Einzelempfehlung").stream()
+                .filter(p -> procedure.getId().equals(p.getParentProcedureId()))
+                .filter(p -> !lockedOnly || p.getEditState() == ProcedureEditStateType.COMPLETED);
+    }
+
+    /**
+     * Stream of locked procedures for 'DNPM UF Einzelempfehlung' related to given procedure for 'DNPM Therapieplan'
+     *
+     * @param procedure A procedure for 'DNPM Therapieplan'
+     * @return Stream of locked procedures
+     */
+    public Stream<Procedure> getEinzelempfehlungRelatedToTherapieplan(Procedure procedure) {
+        return getTherapieplanRelatedToKlinikAnamnese(procedure, true);
+    }
+
+    /**
+     * Stream of procedures for 'DNPM FollowUp' related to given procedure for 'DNPM UF Einzelempfehlung'
+     *
+     * @param procedure  A procedure for 'DNPM UF Einzelempfehlung'
+     * @param lockedOnly include locked procedures only
+     * @return Stream of procedures
+     */
+    public Stream<Procedure> getFollowUpsRelatedToEinzelempfehlung(Procedure procedure, boolean lockedOnly) {
+        if (!"DNPM UF Einzelempfehlung".equals(procedure.getFormName())) {
+            logger.warn("Ignoring - not of form 'DNPM UF Einzelempfehlung'!");
+            return Stream.empty();
+        }
+        if (procedure.getDiseases().size() != 1) {
+            logger.warn("Ignoring - more than one disease!");
+            return Stream.empty();
+        }
+        return onkostarApi.getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM FollowUp").stream()
+                .filter(p -> {
+                    var refId = p.getValue("LinkTherapieempfehlung").getInt();
+                    return procedure.getId().equals(refId);
+                })
+                .filter(p -> !lockedOnly || p.getEditState() == ProcedureEditStateType.COMPLETED)
+                .sorted(Comparator.comparing(Procedure::getId));
+    }
+
+    /**
+     * Stream of locked procedures for 'DNPM FollowUp' related to given procedure for 'DNPM UF Einzelempfehlung'
+     *
+     * @param procedure  A procedure for 'DNPM UF Einzelempfehlung'
+     * @return Stream of locked procedures
+     */
+    public Stream<Procedure> getFollowUpsRelatedToEinzelempfehlung(Procedure procedure) {
+        return getFollowUpsRelatedToEinzelempfehlung(procedure, true);
     }
 
     public String einzelempfehlungMtbDate(Procedure procedure) {
