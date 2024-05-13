@@ -50,6 +50,16 @@ public class TestUtils {
         return procedure;
     }
 
+    public static Procedure createFollowUpProcedure(IOnkostarApi onkostarApi) {
+        var procedure = new Procedure(onkostarApi);
+        procedure.setId(1);
+        procedure.setFormName("DNPM FollowUp");
+        procedure.setPatient(createPatient(onkostarApi));
+        procedure.addDisease(createDisease(onkostarApi));
+
+        return procedure;
+    }
+
     public static Patient createPatient(IOnkostarApi onkostarApi) {
         var patient = new Patient(onkostarApi);
         patient.setId(123456);
