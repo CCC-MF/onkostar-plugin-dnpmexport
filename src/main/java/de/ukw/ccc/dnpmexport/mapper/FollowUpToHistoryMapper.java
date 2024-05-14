@@ -27,6 +27,7 @@ package de.ukw.ccc.dnpmexport.mapper;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.History;
 
+import java.util.List;
 import java.util.Optional;
 
 public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
@@ -34,6 +35,8 @@ public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
     static final String FIELD_NAME_RECORDED_ON = "DatumFollowUp";
     static final String FIELD_NAME_STATUS = "StatusTherapie";
     static final String FIELD_NAME_BASED_ON = "LinkTherapieempfehlung";
+
+    static final String FIELD_NAME_EINZELEMPFEHLUNG_MEDICATION_JSON = "wirkstoffejson";
 
     public FollowUpToHistoryMapper(final MapperUtils mapperUtils) {
         super(mapperUtils);
@@ -61,8 +64,16 @@ public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
             builder.withStatus(mapStatus(status));
         }
 
-        if (null != basedOn) {
+        if (null != basedOn && basedOn.matches("[0-9]*")) {
             builder.withBasedOn(anonymizeString(basedOn));
+
+            final var einzelempfehlung = mapperUtils.onkostarApi().getProcedure(Integer.parseInt(basedOn));
+            if (null != einzelempfehlung) {
+                final var wirkstoffeJson = einzelempfehlung.getValue(FIELD_NAME_EINZELEMPFEHLUNG_MEDICATION_JSON);
+                if (null != wirkstoffeJson) {
+                    builder.withMedication(new JsonToMedicationMapper().apply(wirkstoffeJson.getString()).orElse(List.of()));
+                }
+            }
         }
 
         return Optional.of(builder.build());

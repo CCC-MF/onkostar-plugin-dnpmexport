@@ -20,10 +20,15 @@
 
 package de.ukw.ccc.dnpmexport.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.itc.onkostar.api.*;
+import de.ukw.ccc.bwhc.dto.Medication;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class TestUtils {
 
@@ -46,6 +51,46 @@ public class TestUtils {
 
         procedure.setValue("ConsentStatusEinwilligungDNPM", new Item("ConsentStatusEinwilligungDNPM", "rejected"));
         procedure.setValue("AnmeldedatumMTB", new Item("AnmeldedatumMTB", "2024-01-01"));
+
+        return procedure;
+    }
+
+    public static Procedure createTherapieplanProcedure(IOnkostarApi onkostarApi) {
+        var procedure = new Procedure(onkostarApi);
+        procedure.setId(1);
+        procedure.setFormName("DNPM Therapieplan");
+        procedure.setPatient(createPatient(onkostarApi));
+        procedure.addDisease(createDisease(onkostarApi));
+
+        return procedure;
+    }
+
+    public static Procedure createEinzelempfehlungProcedure(IOnkostarApi onkostarApi, Procedure parent) throws Exception {
+        return createEinzelempfehlungProcedure(onkostarApi, parent, List.of());
+    }
+
+    public static Procedure createEinzelempfehlungProcedure(IOnkostarApi onkostarApi, Procedure parent, List<Medication> medication) throws Exception {
+        var procedure = new Procedure(onkostarApi);
+        procedure.setId(11);
+        procedure.setParentProcedureId(parent.getId());
+        procedure.setFormName("DNPM UF Einzelempfehlung");
+        procedure.setPatient(createPatient(onkostarApi));
+        procedure.addDisease(createDisease(onkostarApi));
+
+        procedure.setValue("mtb", new Item("ref_tumorkonferenz", "42"));
+        procedure.setValue("ufeedatum", new Item("datum", Date.from(Instant.parse("2024-05-14T12:00:00Z"))));
+        procedure.setValue("prio", new Item("prio", "1"));
+
+        var medicationJson = new ObjectMapper().writeValueAsString(medication.stream().map(m -> {
+            final var data = new HashMap<String, String>();
+            data.put("code", m.getCode());
+            data.put("name", m.getDisplay());
+            data.put("system", m.getSystem().toString());
+            data.put("version", m.getVersion());
+            return data;
+        }).collect(Collectors.toList()));
+
+        procedure.setValue("wirkstoffejson", new Item("wirkstoffejson", medicationJson));
 
         return procedure;
     }
