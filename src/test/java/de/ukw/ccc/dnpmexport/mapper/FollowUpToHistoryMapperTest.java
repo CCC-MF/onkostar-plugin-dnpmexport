@@ -142,4 +142,36 @@ public class FollowUpToHistoryMapperTest {
         assertThat(history.get().getPeriod().getEnd()).isNull();
     }
 
+    @Test
+    void shouldMapToHistoryWithDosageLess50() {
+        var procedure = createFollowUpProcedure(this.onkostarApi);
+        procedure.setValue(FIELD_NAME_RECORDED_ON, new Item(FIELD_NAME_RECORDED_ON, Date.from(Instant.parse("2024-05-14T12:00:00Z"))));
+        procedure.setValue(FIELD_NAME_STATUS, new Item(FIELD_NAME_STATUS, "on-going"));
+        procedure.setValue(FIELD_NAME_BASED_ON, new Item(FIELD_NAME_BASED_ON, "12345"));
+
+        procedure.setValue(FIELD_NAME_DOSAGE, new Item(FIELD_NAME_DOSAGE, "k"));
+
+        var history = this.mapper.apply(procedure);
+
+        assertThat(history).isNotEmpty();
+        assertThat(history.get().getDosage()).isEqualTo(History.Dosage._50_);
+        assertThat(history.get().getDosage().toString()).isEqualTo("<50%");
+    }
+
+    @Test
+    void shouldMapToHistoryWithDosageGreaterEqual50() {
+        var procedure = createFollowUpProcedure(this.onkostarApi);
+        procedure.setValue(FIELD_NAME_RECORDED_ON, new Item(FIELD_NAME_RECORDED_ON, Date.from(Instant.parse("2024-05-14T12:00:00Z"))));
+        procedure.setValue(FIELD_NAME_STATUS, new Item(FIELD_NAME_STATUS, "on-going"));
+        procedure.setValue(FIELD_NAME_BASED_ON, new Item(FIELD_NAME_BASED_ON, "12345"));
+
+        procedure.setValue(FIELD_NAME_DOSAGE, new Item(FIELD_NAME_DOSAGE, "g"));
+
+        var history = this.mapper.apply(procedure);
+
+        assertThat(history).isNotEmpty();
+        assertThat(history.get().getDosage()).isEqualTo(History.Dosage._50);
+        assertThat(history.get().getDosage().toString()).isEqualTo(">=50%");
+    }
+
 }

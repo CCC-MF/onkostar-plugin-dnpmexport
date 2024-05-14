@@ -38,6 +38,7 @@ public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
     static final String FIELD_NAME_BASED_ON = "LinkTherapieempfehlung";
     static final String FIELD_NAME_PERIOD_START = "Therapiestart";
     static final String FIELD_NAME_PERIOD_END = "Therapieende";
+    static final String FIELD_NAME_DOSAGE = "Dosisdichte";
 
     static final String FIELD_NAME_EINZELEMPFEHLUNG_MEDICATION_JSON = "wirkstoffejson";
 
@@ -88,6 +89,11 @@ public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
             builder.withPeriod(periodBuilder.build());
         }
 
+        var dosage = procedure.getValue(FIELD_NAME_DOSAGE);
+        if (null != dosage) {
+            builder.withDosage(mapDosage(dosage.getString()));
+        }
+
         return Optional.of(builder.build());
     }
 
@@ -101,6 +107,17 @@ public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
                 return History.MolecularTherapyStatus.STOPPED;
             case "completed":
                 return History.MolecularTherapyStatus.COMPLETED;
+            default:
+                return null;
+        }
+    }
+
+    private static History.Dosage mapDosage(String value) {
+        switch (value) {
+            case "k":
+                return History.Dosage._50_;
+            case "g":
+                return History.Dosage._50;
             default:
                 return null;
         }
