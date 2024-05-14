@@ -42,7 +42,8 @@ public class PatientMapper implements Mapper<Patient, Optional<de.ukw.ccc.bwhc.d
         var patientBuilder = de.ukw.ccc.bwhc.dto.Patient.builder()
                 .withId(getPatientId(patient))
                 .withBirthDate(dateFormat().format(patient.getBirthdate()))
-                .withGender(map(patient.getSex()));
+                .withGender(map(patient.getSex()))
+                .withInsurance(patient.getHealthFundNumber());
 
         if (null != patient.getDeathdate()) {
             patientBuilder.withDateOfDeath(dateFormat().format(patient.getDeathdate()));
