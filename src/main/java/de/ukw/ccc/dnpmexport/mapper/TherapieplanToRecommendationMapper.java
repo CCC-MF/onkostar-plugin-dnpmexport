@@ -24,8 +24,6 @@
 
 package de.ukw.ccc.dnpmexport.mapper;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.*;
 
@@ -35,11 +33,8 @@ import java.util.stream.Collectors;
 
 public class TherapieplanToRecommendationMapper extends TherapieplanMapper<List<Recommendation>> {
 
-    private final ObjectMapper objectMapper;
-
     public TherapieplanToRecommendationMapper(final MapperUtils mapperUtils) {
         super(mapperUtils);
-        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -74,7 +69,8 @@ public class TherapieplanToRecommendationMapper extends TherapieplanMapper<List<
                     }
 
                     var recommendation = builder.build();
-                    recommendation.getMedication().addAll(medications(p));
+                    var m = medications(p);
+                    recommendation.getMedication().addAll(m);
 
                     return recommendation;
                 })
@@ -86,7 +82,12 @@ public class TherapieplanToRecommendationMapper extends TherapieplanMapper<List<
     }
 
     private Recommendation.Priority priority(Procedure procedure) {
-        switch (procedure.getValue("prio").getString()) {
+        final var value = procedure.getValue("prio");
+        if (null == value) {
+            return null;
+        }
+
+        switch (value.getString()) {
             case "1":
                 return Recommendation.Priority._1;
             case "2":
@@ -101,7 +102,12 @@ public class TherapieplanToRecommendationMapper extends TherapieplanMapper<List<
     private LevelOfEvidence levelOfEvidence(Procedure procedure) {
         var addendums = addendums(procedure);
 
-        switch (procedure.getValue("evidenzlevel").getString()) {
+        final var value = procedure.getValue("evidenzlevel");
+        if (null == value) {
+            return null;
+        }
+
+        switch (value.getString()) {
             case "1":
                 return LevelOfEvidence.builder()
                         .withGrading(Grading.builder().withCode(Grading.GradingCode.M_1_A).build())
@@ -148,7 +154,11 @@ public class TherapieplanToRecommendationMapper extends TherapieplanMapper<List<
     }
 
     private Set<Addendum> addendums(Procedure procedure) {
-        switch (procedure.getValue("evidenzlevelzusatz").getString()) {
+        final var value = procedure.getValue("evidenzlevelzusatz");
+        if (null == value) {
+            return Set.of();
+        }
+        switch (value.getString()) {
             case "s":
                 return Set.of(Addendum.builder().withCode("is").build());
             case "v":
@@ -163,67 +173,8 @@ public class TherapieplanToRecommendationMapper extends TherapieplanMapper<List<
     }
 
     private List<Medication> medications(Procedure procedure) {
-        try {
-            var wirkstoffejson = procedure.getValue("wirkstoffejson").getString();
-            return objectMapper.readValue(wirkstoffejson, new TypeReference<List<Wirkstoff>>() {
-                    }).stream()
-                    .map(wirkstoff -> Medication.builder()
-                            .withCode(wirkstoff.code)
-                            .withSystem(
-                                    // Wirkstoff ohne Version => UNREGISTERED
-                                    "ATC".equals(wirkstoff.system) && null != wirkstoff.version && !wirkstoff.version.isBlank()
-                                            ? Medication.System.ATC
-                                            : Medication.System.UNREGISTERED
-                            )
-                            .withVersion(wirkstoff.version)
-                            .withDisplay(wirkstoff.name)
-                            .build()
-                    )
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return List.of();
-        }
-    }
-
-    private static class Wirkstoff {
-        private String code;
-        private String name;
-        private String system;
-        private String version;
-
-        public String getCode() {
-            return code;
-        }
-
-        public void setCode(String code) {
-            this.code = code;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getSystem() {
-            return system;
-        }
-
-        public void setSystem(String system) {
-            this.system = system;
-        }
-
-        public String getVersion() {
-            return version;
-        }
-
-        public void setVersion(String version) {
-            this.version = version;
-        }
-
+        final var medications = new JsonToMedicationMapper().apply(procedure.getValue("wirkstoffejson").getString());
+        return medications.orElseGet(List::of);
     }
 
 }
