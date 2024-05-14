@@ -43,7 +43,6 @@ import static de.ukw.ccc.dnpmexport.test.TestUtils.createEinzelempfehlungProcedu
 import static de.ukw.ccc.dnpmexport.test.TestUtils.createFollowUpProcedure;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 
 @ExtendWith(MockitoExtension.class)
@@ -83,8 +82,64 @@ public class FollowUpToHistoryMapperTest {
         assertThat(history.get().getPatient()).isEqualTo("2000123456");
         assertThat(history.get().getStatus()).isEqualTo(History.MolecularTherapyStatus.ON_GOING);
         assertThat(history.get().getBasedOn()).matches("UNKNOWN[a-z0-9]+");
+    }
+
+    @Test
+    void shouldMapToHistoryWithMedication() throws Exception {
+        var procedure = createFollowUpProcedure(this.onkostarApi);
+        procedure.setValue(FIELD_NAME_RECORDED_ON, new Item(FIELD_NAME_RECORDED_ON, Date.from(Instant.parse("2024-05-14T12:00:00Z"))));
+        procedure.setValue(FIELD_NAME_STATUS, new Item(FIELD_NAME_STATUS, "on-going"));
+        procedure.setValue(FIELD_NAME_BASED_ON, new Item(FIELD_NAME_BASED_ON, "12345"));
+
+        var einzelempfehlung = createEinzelempfehlungProcedure(
+                this.onkostarApi,
+                procedure,
+                List.of(Medication.builder().withCode("Test").withSystem(Medication.System.UNREGISTERED).build())
+        );
+        procedure.addSubProcedure("Einzelempfehlung", einzelempfehlung);
+
+        doAnswer(invocationOnMock -> einzelempfehlung).when(onkostarApi).getProcedure(anyInt());
+
+        var history = this.mapper.apply(procedure);
+
+        assertThat(history).isNotEmpty();
         assertThat(history.get().getMedication()).hasSize(1);
         assertThat(history.get().getMedication().get(0)).isEqualTo(Medication.builder().withCode("Test").withSystem(Medication.System.UNREGISTERED).build());
+    }
+
+    @Test
+    void shouldMapToHistoryWithPeriod() {
+        var procedure = createFollowUpProcedure(this.onkostarApi);
+        procedure.setValue(FIELD_NAME_RECORDED_ON, new Item(FIELD_NAME_RECORDED_ON, Date.from(Instant.parse("2024-05-14T12:00:00Z"))));
+        procedure.setValue(FIELD_NAME_STATUS, new Item(FIELD_NAME_STATUS, "on-going"));
+        procedure.setValue(FIELD_NAME_BASED_ON, new Item(FIELD_NAME_BASED_ON, "12345"));
+
+        procedure.setValue(FIELD_NAME_PERIOD_START, new Item(FIELD_NAME_PERIOD_START, Date.from(Instant.parse("2024-05-12T12:00:00Z"))));
+        procedure.setValue(FIELD_NAME_PERIOD_END, new Item(FIELD_NAME_PERIOD_END, Date.from(Instant.parse("2024-05-13T12:00:00Z"))));
+
+        var history = this.mapper.apply(procedure);
+
+        assertThat(history).isNotEmpty();
+        assertThat(history.get().getPeriod()).isNotNull();
+        assertThat(history.get().getPeriod().getStart()).isEqualTo("2024-05-12");
+        assertThat(history.get().getPeriod().getEnd()).isEqualTo("2024-05-13");
+    }
+
+    @Test
+    void shouldMapToHistoryWithPeriodStartOnly() {
+        var procedure = createFollowUpProcedure(this.onkostarApi);
+        procedure.setValue(FIELD_NAME_RECORDED_ON, new Item(FIELD_NAME_RECORDED_ON, Date.from(Instant.parse("2024-05-14T12:00:00Z"))));
+        procedure.setValue(FIELD_NAME_STATUS, new Item(FIELD_NAME_STATUS, "on-going"));
+        procedure.setValue(FIELD_NAME_BASED_ON, new Item(FIELD_NAME_BASED_ON, "12345"));
+
+        procedure.setValue(FIELD_NAME_PERIOD_START, new Item(FIELD_NAME_PERIOD_START, Date.from(Instant.parse("2024-05-12T12:00:00Z"))));
+
+        var history = this.mapper.apply(procedure);
+
+        assertThat(history).isNotEmpty();
+        assertThat(history.get().getPeriod()).isNotNull();
+        assertThat(history.get().getPeriod().getStart()).isEqualTo("2024-05-12");
+        assertThat(history.get().getPeriod().getEnd()).isNull();
     }
 
 }
