@@ -26,6 +26,7 @@ package de.ukw.ccc.dnpmexport.mapper;
 
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.History;
+import de.ukw.ccc.bwhc.dto.MolekularTherapyReasonStopped;
 import de.ukw.ccc.bwhc.dto.PeriodStartEnd;
 
 import java.util.List;
@@ -39,6 +40,7 @@ public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
     static final String FIELD_NAME_PERIOD_START = "Therapiestart";
     static final String FIELD_NAME_PERIOD_END = "Therapieende";
     static final String FIELD_NAME_DOSAGE = "Dosisdichte";
+    static final String FIELD_NAME_REASON_STOPPED = "GrundTherapieabbruch";
 
     static final String FIELD_NAME_EINZELEMPFEHLUNG_MEDICATION_JSON = "wirkstoffejson";
 
@@ -94,6 +96,11 @@ public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
             builder.withDosage(mapDosage(dosage.getString()));
         }
 
+        var reasonStopped = procedure.getValue(FIELD_NAME_REASON_STOPPED);
+        if (null != reasonStopped) {
+            builder.withReasonStopped(mapReasonStopped(reasonStopped.getString()));
+        }
+
         return Optional.of(builder.build());
     }
 
@@ -121,5 +128,51 @@ public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
             default:
                 return null;
         }
+    }
+
+    private static MolekularTherapyReasonStopped mapReasonStopped(String value) {
+        MolekularTherapyReasonStopped.MolecularTherapyStopReason reason;
+        switch (value) {
+            case "re":
+                reason = MolekularTherapyReasonStopped.MolecularTherapyStopReason.REMISSION;
+                break;
+            case "pw":
+                reason = MolekularTherapyReasonStopped.MolecularTherapyStopReason.PATIENT_WISH;
+                break;
+            case "pe":
+                reason = MolekularTherapyReasonStopped.MolecularTherapyStopReason.PAYMENT_ENDED;
+                break;
+            case "mr":
+                reason = MolekularTherapyReasonStopped.MolecularTherapyStopReason.MEDICAL_REASON;
+                break;
+            case "pr":
+                reason = MolekularTherapyReasonStopped.MolecularTherapyStopReason.PROGRESSION;
+                break;
+            case "death":
+                reason = MolekularTherapyReasonStopped.MolecularTherapyStopReason.PATIENT_DEATH;
+                break;
+            case "to":
+                reason = MolekularTherapyReasonStopped.MolecularTherapyStopReason.TOXICITY;
+                break;
+            case "ot":
+                reason = MolekularTherapyReasonStopped.MolecularTherapyStopReason.OTHER_THERAPY_CHOSEN;
+                break;
+            case "ce":
+                reason = MolekularTherapyReasonStopped.MolecularTherapyStopReason.CONTINUED_EXTERNALLY;
+                break;
+            case "de":
+                reason = MolekularTherapyReasonStopped.MolecularTherapyStopReason.DETERIORATION;
+                break;
+            case "bsc":
+            case "other":
+                reason = MolekularTherapyReasonStopped.MolecularTherapyStopReason.OTHER;
+                break;
+            case "un":
+            default:
+                reason = MolekularTherapyReasonStopped.MolecularTherapyStopReason.UNKNOWN;
+                break;
+        }
+
+        return MolekularTherapyReasonStopped.builder().withCode(reason).build();
     }
 }

@@ -28,6 +28,7 @@ import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Item;
 import de.ukw.ccc.bwhc.dto.History;
 import de.ukw.ccc.bwhc.dto.Medication;
+import de.ukw.ccc.bwhc.dto.MolekularTherapyReasonStopped;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -172,6 +173,52 @@ public class FollowUpToHistoryMapperTest {
         assertThat(history).isNotEmpty();
         assertThat(history.get().getDosage()).isEqualTo(History.Dosage._50);
         assertThat(history.get().getDosage().toString()).isEqualTo(">=50%");
+    }
+
+    @Test
+    void shouldMapToHistoryWithReasonStopped() {
+        var procedure = createFollowUpProcedure(this.onkostarApi);
+        procedure.setValue(FIELD_NAME_RECORDED_ON, new Item(FIELD_NAME_RECORDED_ON, Date.from(Instant.parse("2024-05-14T12:00:00Z"))));
+        procedure.setValue(FIELD_NAME_STATUS, new Item(FIELD_NAME_STATUS, "on-going"));
+        procedure.setValue(FIELD_NAME_BASED_ON, new Item(FIELD_NAME_BASED_ON, "12345"));
+
+        procedure.setValue(FIELD_NAME_REASON_STOPPED, new Item(FIELD_NAME_REASON_STOPPED, "pw"));
+
+        var history = this.mapper.apply(procedure);
+
+        assertThat(history).isNotEmpty();
+        assertThat(history.get().getReasonStopped().getCode()).isEqualTo(MolekularTherapyReasonStopped.MolecularTherapyStopReason.PATIENT_WISH);
+    }
+
+    @Test
+    void shouldMapToHistoryWithUnknownReasonStopped() {
+        var procedure = createFollowUpProcedure(this.onkostarApi);
+        procedure.setValue(FIELD_NAME_RECORDED_ON, new Item(FIELD_NAME_RECORDED_ON, Date.from(Instant.parse("2024-05-14T12:00:00Z"))));
+        procedure.setValue(FIELD_NAME_STATUS, new Item(FIELD_NAME_STATUS, "on-going"));
+        procedure.setValue(FIELD_NAME_BASED_ON, new Item(FIELD_NAME_BASED_ON, "12345"));
+
+        procedure.setValue(FIELD_NAME_REASON_STOPPED, new Item(FIELD_NAME_REASON_STOPPED, "someunknownvalue"));
+
+        var history = this.mapper.apply(procedure);
+
+        assertThat(history).isNotEmpty();
+        assertThat(history.get().getReasonStopped().getCode()).isEqualTo(MolekularTherapyReasonStopped.MolecularTherapyStopReason.UNKNOWN);
+    }
+
+    /// Onkostar property catalogue provides "Best Supportive Care" which is not included within data model
+    @Test
+    void shouldMapToHistoryWithOsPropertyCatalogueValueBscReasonStopped() {
+        var procedure = createFollowUpProcedure(this.onkostarApi);
+        procedure.setValue(FIELD_NAME_RECORDED_ON, new Item(FIELD_NAME_RECORDED_ON, Date.from(Instant.parse("2024-05-14T12:00:00Z"))));
+        procedure.setValue(FIELD_NAME_STATUS, new Item(FIELD_NAME_STATUS, "on-going"));
+        procedure.setValue(FIELD_NAME_BASED_ON, new Item(FIELD_NAME_BASED_ON, "12345"));
+
+        procedure.setValue(FIELD_NAME_REASON_STOPPED, new Item(FIELD_NAME_REASON_STOPPED, "bsc"));
+
+        var history = this.mapper.apply(procedure);
+
+        assertThat(history).isNotEmpty();
+        assertThat(history.get().getReasonStopped().getCode()).isEqualTo(MolekularTherapyReasonStopped.MolecularTherapyStopReason.OTHER);
     }
 
 }
