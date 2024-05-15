@@ -221,4 +221,17 @@ public class FollowUpToHistoryMapperTest {
         assertThat(history.get().getReasonStopped().getCode()).isEqualTo(MolekularTherapyReasonStopped.MolecularTherapyStopReason.OTHER);
     }
 
+    @Test
+    void shouldNotMapToHistoryWithoutStatus() {
+        var procedure = createFollowUpProcedure(this.onkostarApi);
+        procedure.setValue(FIELD_NAME_RECORDED_ON, new Item(FIELD_NAME_RECORDED_ON, Date.from(Instant.parse("2024-05-14T12:00:00Z"))));
+        procedure.setValue(FIELD_NAME_BASED_ON, new Item(FIELD_NAME_BASED_ON, "12345"));
+
+        procedure.setValue(FIELD_NAME_REASON_STOPPED, new Item(FIELD_NAME_REASON_STOPPED, "pw"));
+
+        var history = this.mapper.apply(procedure);
+
+        assertThat(history).isEmpty();
+    }
+
 }

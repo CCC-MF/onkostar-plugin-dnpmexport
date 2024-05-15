@@ -28,11 +28,15 @@ import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.History;
 import de.ukw.ccc.bwhc.dto.MolekularTherapyReasonStopped;
 import de.ukw.ccc.bwhc.dto.PeriodStartEnd;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
 
 public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     static final String FIELD_NAME_RECORDED_ON = "DatumFollowUp";
     static final String FIELD_NAME_STATUS = "StatusTherapie";
@@ -65,7 +69,15 @@ public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
 
         var status = procedure.getValue(FIELD_NAME_STATUS);
         if (null != status) {
+            final var mappedStatus = mapStatus(status.getString());
+            if (null == mappedStatus) {
+                logger.warn("Skip FollowUp {}: No mapped value for 'StatusTherapie'", procedure.getId());
+                return Optional.empty();
+            }
             builder.withStatus(mapStatus(status.getString()));
+        } else {
+            logger.warn("Skip FollowUp {}: No value for 'StatusTherapie'", procedure.getId());
+            return Optional.empty();
         }
 
         var basedOn = procedure.getValue(FIELD_NAME_BASED_ON);
