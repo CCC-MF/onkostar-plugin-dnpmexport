@@ -35,8 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Instant;
 import java.util.Date;
 
-import static de.ukw.ccc.dnpmexport.mapper.FollowUpToClaimMapper.FIELD_NAME_ISSUED_ON;
-import static de.ukw.ccc.dnpmexport.mapper.FollowUpToClaimMapper.FIELD_NAME_THERAPY;
+import static de.ukw.ccc.dnpmexport.mapper.FollowUpToClaimMapper.*;
 import static de.ukw.ccc.dnpmexport.test.TestUtils.createFollowUpProcedure;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -57,6 +56,7 @@ public class FollowUpToClaimMapperTest {
     @Test
     void shouldMapToClaim() {
         var procedure = createFollowUpProcedure(this.onkostarApi);
+        procedure.setValue(FIELD_NAME_USE, new Item(FIELD_NAME_USE, "1"));
         procedure.setValue(FIELD_NAME_ISSUED_ON, new Item(FIELD_NAME_ISSUED_ON, Date.from(Instant.parse("2024-05-13T12:00:00Z"))));
         procedure.setValue(FIELD_NAME_THERAPY, new Item(FIELD_NAME_THERAPY, "1234"));
 
@@ -67,6 +67,18 @@ public class FollowUpToClaimMapperTest {
         assertThat(claim.get().getPatient()).isEqualTo("2000123456");
         assertThat(claim.get().getIssuedOn()).isEqualTo("2024-05-13");
         assertThat(claim.get().getTherapy()).matches("UNKNOWN[a-z0-9]+");
+    }
+
+    @Test
+    void shouldNotMapToClaimIfNoRequest() {
+        var procedure = createFollowUpProcedure(this.onkostarApi);
+        procedure.setValue(FIELD_NAME_USE, new Item(FIELD_NAME_USE, "0"));
+        procedure.setValue(FIELD_NAME_ISSUED_ON, new Item(FIELD_NAME_ISSUED_ON, Date.from(Instant.parse("2024-05-13T12:00:00Z"))));
+        procedure.setValue(FIELD_NAME_THERAPY, new Item(FIELD_NAME_THERAPY, "1234"));
+
+        var claim = this.mapper.apply(procedure);
+
+        assertThat(claim).isEmpty();
     }
 
 }

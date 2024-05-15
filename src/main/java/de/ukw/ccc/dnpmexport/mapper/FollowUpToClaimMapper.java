@@ -31,6 +31,7 @@ import java.util.Optional;
 
 public class FollowUpToClaimMapper extends FollowUpMapper<Optional<Claim>> {
 
+    static final String FIELD_NAME_USE = "AntragKostenuebernahme";
     static final String FIELD_NAME_ISSUED_ON = "AusstellungsdatumAntrag";
     static final String FIELD_NAME_THERAPY = "LinkTherapieempfehlung";
 
@@ -41,6 +42,11 @@ public class FollowUpToClaimMapper extends FollowUpMapper<Optional<Claim>> {
     @Override
     public Optional<Claim> apply(Procedure procedure) {
         if (!canApply(procedure)) {
+            return Optional.empty();
+        }
+
+        var use = procedure.getValue(FIELD_NAME_USE);
+        if (null == use || !"1".equals(use.getString())) {
             return Optional.empty();
         }
 
