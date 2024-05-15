@@ -57,7 +57,7 @@ public class FollowUpToClaimResponseMapperTest {
     @Test
     void shouldMapToClaimResponse() {
         var procedure = createFollowUpProcedure(this.onkostarApi);
-        procedure.setValue(FIELD_NAME_ISSUED_ON, new Item(FIELD_NAME_ISSUED_ON, Date.from(Instant.parse("2024-05-13T12:00:00Z"))));
+        procedure.setValue(FIELD_NAME_ISSUED_ON, new Item(DC_FIELD_NAME_ISSUED_ON, Date.from(Instant.parse("2024-05-13T12:00:00Z"))));
         procedure.setValue(FIELD_NAME_STATUS, new Item(FIELD_NAME_STATUS, "rejected"));
         procedure.setValue(FIELD_NAME_REASON, new Item(FIELD_NAME_REASON, "e"));
 

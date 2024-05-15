@@ -26,12 +26,17 @@ package de.ukw.ccc.dnpmexport.mapper;
 
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.ClaimResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
 public class FollowUpToClaimResponseMapper extends FollowUpMapper<Optional<ClaimResponse>> {
 
-    static final String FIELD_NAME_ISSUED_ON = "Datum_AntwortKueAntrag";
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    static final String FIELD_NAME_ISSUED_ON = "DatumAntwortKueAntrag";
+    static final String DC_FIELD_NAME_ISSUED_ON = "DatumAntwortKueAntrag";
     static final String FIELD_NAME_STATUS = "StatusKostenuebernahme";
     static final String FIELD_NAME_REASON = "AblehnungKosten";
 
@@ -54,6 +59,9 @@ public class FollowUpToClaimResponseMapper extends FollowUpMapper<Optional<Claim
         var issuedOn = procedure.getValue(FIELD_NAME_ISSUED_ON);
         if (null != issuedOn) {
             builder.withIssuedOn(dateFormat().format(issuedOn.getDate()));
+        } else {
+            logger.warn("Skip FollowUp {}: No value for 'Datum_AntwortKueAntrag'", procedure.getId());
+            return Optional.empty();
         }
 
         var status = procedure.getValue(FIELD_NAME_STATUS);
