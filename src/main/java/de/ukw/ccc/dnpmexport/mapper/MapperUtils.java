@@ -199,7 +199,7 @@ public class MapperUtils {
      * @return Stream of locked procedures
      */
     public Stream<Procedure> getEinzelempfehlungRelatedToTherapieplan(Procedure procedure) {
-        return getTherapieplanRelatedToKlinikAnamnese(procedure, true);
+        return getEinzelempfehlungRelatedToTherapieplan(procedure, true);
     }
 
     /**
