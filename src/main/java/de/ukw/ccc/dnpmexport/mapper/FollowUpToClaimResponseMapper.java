@@ -57,7 +57,7 @@ public class FollowUpToClaimResponseMapper extends FollowUpMapper<Optional<Claim
                 .withClaim(anonymizeId(procedure));
 
         var issuedOn = procedure.getValue(FIELD_NAME_ISSUED_ON);
-        if (null != issuedOn) {
+        if (null != issuedOn && null != issuedOn.getDate()) {
             builder.withIssuedOn(dateFormat().format(issuedOn.getDate()));
         } else {
             logger.warn("Skip FollowUp {}: No value for 'Datum_AntwortKueAntrag'", procedure.getId());

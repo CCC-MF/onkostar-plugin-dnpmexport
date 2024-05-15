@@ -49,7 +49,7 @@ public class FollowUpToClaimMapper extends FollowUpMapper<Optional<Claim>> {
                 .withPatient(getPatientId(procedure));
 
         var issuedOn = procedure.getValue(FIELD_NAME_ISSUED_ON);
-        if (null != issuedOn) {
+        if (null != issuedOn && null != issuedOn.getDate()) {
             builder.withIssuedOn(dateFormat().format(issuedOn.getDate()));
         }
 
