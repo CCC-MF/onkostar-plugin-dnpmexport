@@ -44,19 +44,18 @@ public class FollowUpToClaimMapper extends FollowUpMapper<Optional<Claim>> {
             return Optional.empty();
         }
 
-        var issuedOn = procedure.getValue(FIELD_NAME_ISSUED_ON).getDate();
-        var therapyId = procedure.getValue(FIELD_NAME_THERAPY).getString();
-
         final var builder = Claim.builder()
                 .withId(anonymizeId(procedure))
                 .withPatient(getPatientId(procedure));
 
+        var issuedOn = procedure.getValue(FIELD_NAME_ISSUED_ON);
         if (null != issuedOn) {
-            builder.withIssuedOn(dateFormat().format(issuedOn));
+            builder.withIssuedOn(dateFormat().format(issuedOn.getDate()));
         }
 
+        var therapyId = procedure.getValue(FIELD_NAME_THERAPY);
         if (null != therapyId) {
-            builder.withTherapy(anonymizeString(therapyId));
+            builder.withTherapy(anonymizeString(therapyId.getString()));
         }
 
         return Optional.of(builder.build());

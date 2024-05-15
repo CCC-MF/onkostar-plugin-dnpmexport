@@ -45,26 +45,25 @@ public class FollowUpToClaimResponseMapper extends FollowUpMapper<Optional<Claim
             return Optional.empty();
         }
 
-        var issuedOn = procedure.getValue(FIELD_NAME_ISSUED_ON).getDate();
-        var status = procedure.getValue(FIELD_NAME_STATUS).getString();
-        var reason = procedure.getValue(FIELD_NAME_REASON).getString();
-
         final var builder = ClaimResponse.builder()
                 .withId(anonymizeId(procedure))
                 .withPatient(getPatientId(procedure))
                 // Uses same ID for claim and claim response
                 .withClaim(anonymizeId(procedure));
 
+        var issuedOn = procedure.getValue(FIELD_NAME_ISSUED_ON);
         if (null != issuedOn) {
-            builder.withIssuedOn(dateFormat().format(issuedOn));
+            builder.withIssuedOn(dateFormat().format(issuedOn.getDate()));
         }
 
+        var status = procedure.getValue(FIELD_NAME_STATUS);
         if (null != status) {
-            builder.withStatus(mapStatus(status));
+            builder.withStatus(mapStatus(status.getString()));
         }
 
+        var reason = procedure.getValue(FIELD_NAME_REASON);
         if (null != reason) {
-            builder.withReason(mapReason(reason));
+            builder.withReason(mapReason(reason.getString()));
         }
 
         return Optional.of(builder.build());
