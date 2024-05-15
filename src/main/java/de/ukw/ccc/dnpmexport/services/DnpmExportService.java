@@ -71,14 +71,75 @@ public class DnpmExportService {
                 sendDeleteRequest(procedure.getPatient().getPatientId());
             }
         } else if (procedure.getFormName().equals("DNPM Therapieplan")) {
-            var procedureId = procedure.getValue("refdnpmklinikanamnese").getInt();
-            var p = onkostarApi.getProcedure(procedureId);
-            if (null != p && shouldExportMtbFile(p).orElse(false)) {
-                exportKlinikAnamneseRelatedData(onkostarApi.getProcedure(procedureId)).ifPresent(this::sendMtbFileRequest);
-            } else {
-                sendDeleteRequest(procedure.getPatient().getPatientId());
-            }
+            findRelatedKlinikAnamnese(procedure)
+                    .ifPresent(klinikAnamnese -> {
+                        if (shouldExportMtbFile(klinikAnamnese).orElse(false)) {
+                            exportKlinikAnamneseRelatedData(klinikAnamnese).ifPresent(this::sendMtbFileRequest);
+                        } else {
+                            sendDeleteRequest(procedure.getPatient().getPatientId());
+                        }
+                    });
+        } else if (procedure.getFormName().equals("DNPM FollowUp")) {
+            findRelatedEinzelempfehlung(procedure)
+                    .flatMap(this::findParentTherapieplan)
+                    .flatMap(this::findRelatedKlinikAnamnese)
+                    .ifPresent(klinikAnamnese -> {
+                        if (shouldExportMtbFile(klinikAnamnese).orElse(false)) {
+                            exportKlinikAnamneseRelatedData(klinikAnamnese).ifPresent(this::sendMtbFileRequest);
+                        } else {
+                            sendDeleteRequest(procedure.getPatient().getPatientId());
+                        }
+                    });
         }
+    }
+
+    private Optional<Procedure> findRelatedEinzelempfehlung(Procedure procedure) {
+        if (null == procedure || !procedure.getFormName().equals("DNPM FollowUp")) {
+            logger.warn("Not a form of type 'DNPM FollowUp'");
+            return Optional.empty();
+        }
+        var procedureId = procedure.getValue("LinkTherapieempfehlung");
+        if (null == procedureId) {
+            logger.warn("No reference to 'DNPM UF Einzelempfehlung' given in 'DNPM FollowUp': {}", procedure.getId());
+            return Optional.empty();
+        }
+        var einzelempfehlung = onkostarApi.getProcedure(procedureId.getInt());
+        if (null == einzelempfehlung || !einzelempfehlung.getFormName().equals("DNPM UF Einzelempfehlung")) {
+            logger.warn("No form of type 'DNPM UF Einzelempfehlung' found for 'DNPM FollowUp': {}", procedure.getId());
+            return Optional.empty();
+        }
+        return Optional.of(einzelempfehlung);
+    }
+
+    private Optional<Procedure> findParentTherapieplan(Procedure procedure) {
+        if (null == procedure || !procedure.getFormName().equals("DNPM UF Einzelempfehlung")) {
+            logger.warn("Not a form of type 'DNPM UF Einzelempfehlung'");
+            return Optional.empty();
+        }
+        var therapieplan = onkostarApi.getProcedure(procedure.getParentProcedureId());
+        if (null == therapieplan || !therapieplan.getFormName().equals("DNPM Therapieplan")) {
+            logger.warn("No parent form of type 'DNPM Therapieplan' found for 'DNPM UF Einzelempfehlung': {}", procedure.getId());
+            return Optional.empty();
+        }
+        return Optional.of(therapieplan);
+    }
+
+    private Optional<Procedure> findRelatedKlinikAnamnese(Procedure procedure) {
+        if (null == procedure || !procedure.getFormName().equals("DNPM Therapieplan")) {
+            logger.warn("Not a form of type 'DNPM Therapieplan'");
+            return Optional.empty();
+        }
+        var klinikAnamnese = procedure.getValue("refdnpmklinikanamnese");
+        if (null == klinikAnamnese) {
+            logger.warn("No reference to 'DNPM KlinikAnamnese' given in 'DNPM Therapieplan': {}", procedure.getId());
+            return Optional.empty();
+        }
+        var result = onkostarApi.getProcedure(klinikAnamnese.getInt());
+        if (null == result || !result.getFormName().equals("DNPM Klinik/Anamnese")) {
+            logger.warn("No form of type 'DNPM Klinik/Anamnese' found: {}", klinikAnamnese.getInt());
+            return Optional.empty();
+        }
+        return Optional.of(result);
     }
 
     private void sendMtbFileRequest(MtbFile mtbFile) throws ExportException {
