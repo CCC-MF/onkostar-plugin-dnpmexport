@@ -83,9 +83,9 @@ public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
 
         var periodStart = procedure.getValue(FIELD_NAME_PERIOD_START);
         var periodEnd = procedure.getValue(FIELD_NAME_PERIOD_END);
-        if (null != periodStart) {
+        if (null != periodStart && null != periodStart.getDate()) {
             final var periodBuilder = PeriodStartEnd.builder().withStart(dateFormat().format(periodStart.getDate()));
-            if (null != periodEnd) {
+            if (null != periodEnd && null != periodEnd.getDate()) {
                 periodBuilder.withEnd(dateFormat().format(periodEnd.getDate()));
             }
             builder.withPeriod(periodBuilder.build());
