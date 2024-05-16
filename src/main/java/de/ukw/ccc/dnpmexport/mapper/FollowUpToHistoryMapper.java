@@ -45,6 +45,7 @@ public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
     static final String FIELD_NAME_PERIOD_END = "Therapieende";
     static final String FIELD_NAME_DOSAGE = "Dosisdichte";
     static final String FIELD_NAME_REASON_STOPPED = "GrundTherapieabbruch";
+    static final String FIELD_NAME_REASON_NOT_DONE = "GrundNichtumsetzung";
 
     static final String FIELD_NAME_EINZELEMPFEHLUNG_MEDICATION_JSON = "wirkstoffejson";
 
@@ -112,6 +113,12 @@ public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
         if (null != reasonStopped) {
             builder.withReasonStopped(mapReasonStopped(reasonStopped.getString()));
         }
+
+        // Todo: Include in DTO
+        /*var reasonNotDone = procedure.getValue(FIELD_NAME_REASON_NOT_DONE);
+        if (null != reasonNotDone) {
+            builder.withReasonNotDone(mapReasonStopped(reasonNotDone.getString()));
+        }*/
 
         return Optional.of(builder.build());
     }
