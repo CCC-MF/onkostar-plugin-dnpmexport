@@ -237,6 +237,70 @@ public class MapperUtils {
         return getFollowUpsRelatedToEinzelempfehlung(procedure, true);
     }
 
+    /**
+     * Finds related Procedure for 'DNPM UF Einzelempfehlung' related to given procedure for 'DNPM FollowUp'
+     * @param procedure A procedure for 'DNPM FollowUp'
+     * @return Optional of related procedure
+     */
+    public Optional<Procedure> findEinzelempfehlungRelatedToFollowUp(Procedure procedure) {
+        if (null == procedure || !procedure.getFormName().equals("DNPM FollowUp")) {
+            logger.warn("Not a form of type 'DNPM FollowUp'");
+            return Optional.empty();
+        }
+        var procedureId = procedure.getValue("LinkTherapieempfehlung");
+        if (null == procedureId) {
+            logger.warn("No reference to 'DNPM UF Einzelempfehlung' given in 'DNPM FollowUp': {}", procedure.getId());
+            return Optional.empty();
+        }
+        var einzelempfehlung = onkostarApi.getProcedure(procedureId.getInt());
+        if (null == einzelempfehlung || !einzelempfehlung.getFormName().equals("DNPM UF Einzelempfehlung")) {
+            logger.warn("No form of type 'DNPM UF Einzelempfehlung' found for 'DNPM FollowUp': {}", procedure.getId());
+            return Optional.empty();
+        }
+        return Optional.of(einzelempfehlung);
+    }
+
+    /**
+     * Finds related Procedure for 'DNPM Therapieplan' related to given procedure for 'DNPM UF Einzelempfehlung'
+     * @param procedure A procedure for 'DNPM UF Einzelempfehlung'
+     * @return Optional of related procedure
+     */
+    public Optional<Procedure> findTherapieplanRelatedToEinzelempfehlung(Procedure procedure) {
+        if (null == procedure || !procedure.getFormName().equals("DNPM UF Einzelempfehlung")) {
+            logger.warn("Not a form of type 'DNPM UF Einzelempfehlung'");
+            return Optional.empty();
+        }
+        var therapieplan = onkostarApi.getProcedure(procedure.getParentProcedureId());
+        if (null == therapieplan || !therapieplan.getFormName().equals("DNPM Therapieplan")) {
+            logger.warn("No parent form of type 'DNPM Therapieplan' found for 'DNPM UF Einzelempfehlung': {}", procedure.getId());
+            return Optional.empty();
+        }
+        return Optional.of(therapieplan);
+    }
+
+    /**
+     * Finds related Procedure for 'DNPM Klinik/Anamnese' related to given procedure for 'DNPM Therapieplan'
+     * @param procedure A procedure for 'DNPM Therapieplan'
+     * @return Optional of related procedure
+     */
+    public Optional<Procedure> findKlinikAnamneseRelatedToTherapieplan(Procedure procedure) {
+        if (null == procedure || !procedure.getFormName().equals("DNPM Therapieplan")) {
+            logger.warn("Not a form of type 'DNPM Therapieplan'");
+            return Optional.empty();
+        }
+        var klinikAnamnese = procedure.getValue("refdnpmklinikanamnese");
+        if (null == klinikAnamnese) {
+            logger.warn("No reference to 'DNPM KlinikAnamnese' given in 'DNPM Therapieplan': {}", procedure.getId());
+            return Optional.empty();
+        }
+        var result = onkostarApi.getProcedure(klinikAnamnese.getInt());
+        if (null == result || !result.getFormName().equals("DNPM Klinik/Anamnese")) {
+            logger.warn("No form of type 'DNPM Klinik/Anamnese' found: {}", klinikAnamnese.getInt());
+            return Optional.empty();
+        }
+        return Optional.of(result);
+    }
+
     public String einzelempfehlungMtbDate(Procedure procedure) {
         if (!"DNPM UF Einzelempfehlung".equals(procedure.getFormName())) {
             logger.warn("Ignoring - not of form 'DNPM UF Einzelempfehlung'!");
