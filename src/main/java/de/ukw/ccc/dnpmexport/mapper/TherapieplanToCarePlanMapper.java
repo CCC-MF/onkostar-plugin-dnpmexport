@@ -53,18 +53,21 @@ public class TherapieplanToCarePlanMapper extends TherapieplanMapper<Optional<Ca
                 .withId(anonymizeId(procedure))
                 .withIssuedOn(dateFormat().format(procedure.getStartDate()))
                 .withPatient(getPatientId(procedure))
-                .withDescription(protokollauszug == null ? "" : protokollauszug.getString())
-                .withDiagnosis(mapperUtils.anonymizeId(procedure.getDiseaseIds().get(0).toString()));
+                .withDescription(protokollauszug == null ? "" : protokollauszug.getString());
+
+        mapperUtils.findKlinikAnamneseRelatedToTherapieplan(procedure)
+                .ifPresent(klinikAnamnese -> carePlanBuilder.withDiagnosis(mapperUtils.anonymizeId(klinikAnamnese.getId().toString())));
 
         var targetFinding = procedure.getValue("target").getString();
         if (targetFinding.equals("KT")) {
-            carePlanBuilder.withNoTargetFinding(
-                    NoTargetFinding.builder()
-                            .withDiagnosis(mapperUtils.anonymizeId(procedure.getDiseaseIds().get(0).toString()))
-                            .withPatient(getPatientId(procedure))
-                            .withIssuedOn(dateFormat().format(procedure.getStartDate()))
-                            .build()
-            );
+            final var noTargetFindingBuilder = NoTargetFinding.builder()
+                    .withPatient(getPatientId(procedure))
+                    .withIssuedOn(dateFormat().format(procedure.getStartDate()));
+
+            mapperUtils.findKlinikAnamneseRelatedToTherapieplan(procedure)
+                    .ifPresent(klinikAnamnese -> noTargetFindingBuilder.withDiagnosis(mapperUtils.anonymizeId(klinikAnamnese.getId().toString())));
+
+            carePlanBuilder.withNoTargetFinding(noTargetFindingBuilder.build());
         }
 
         var humangenBeratung = procedure.getValue("humangenberatung").getString();

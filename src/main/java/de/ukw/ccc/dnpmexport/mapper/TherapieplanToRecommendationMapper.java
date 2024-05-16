@@ -57,12 +57,14 @@ public class TherapieplanToRecommendationMapper extends TherapieplanMapper<List<
                     var builder = Recommendation.builder()
                             .withId(anonymizeId(p))
                             .withPatient(getPatientId(procedure))
-                            .withDiagnosis(mapperUtils.anonymizeId(procedure.getDiseaseIds().get(0).toString()))
                             .withIssuedOn(issuedOn(p))
                             .withLevelOfEvidence(levelOfEvidence(p))
                             .withPriority(priority(p))
                             //.withSupportingVariants() // TODO: Einfügen, wenn OS.Molekulargenetik fertig
                             ;
+
+                    mapperUtils.findKlinikAnamneseRelatedToTherapieplan(procedure)
+                            .ifPresent(klinikAnamnese -> builder.withDiagnosis(mapperUtils.anonymizeId(klinikAnamnese.getId().toString())));
 
                     if (null != molgenref) {
                         builder.withNgsReport(anonymizeString(molgenref.getString()));
