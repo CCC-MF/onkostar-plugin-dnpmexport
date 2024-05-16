@@ -301,6 +301,37 @@ public class MapperUtils {
         return Optional.of(result);
     }
 
+    /**
+     * Returns sanitized String for ICD-10 and ICD-O-3-Location Property Catalogue Version
+     * This will return Optional.empty() if nothing can be applied.
+     *
+     * @param item The Item to get sanitized Version string for
+     * @return The optional String
+     */
+    public Optional<String> getSanitizedPropertyCatalogueVersionString(Item item) {
+        if (null == item || null == item.getPropertyCatalogueVersion()) {
+            return Optional.empty();
+        }
+
+        try {
+            final var oid = this.onkostarApi().getPropertyCatalogueVersionOid(Integer.parseInt(item.getPropertyCatalogueVersion()));
+            if (null == oid) {
+                return Optional.empty();
+            }
+
+            if (oid.startsWith("icd10gmversion")) {
+                return Optional.of(oid.replaceAll("icd10gmversion", ""));
+            } else if (oid.startsWith("LOK Version")) {
+                return Optional.of(oid.replaceAll("LOK Version", ""));
+            }
+        } catch (Exception e) {
+            logger.warn("Cannot parse property catalogue version as Integer: {}", item.getPropertyCatalogueVersion());
+            return Optional.empty();
+        }
+
+        return Optional.empty();
+    }
+
     public String einzelempfehlungMtbDate(Procedure procedure) {
         if (!"DNPM UF Einzelempfehlung".equals(procedure.getFormName())) {
             logger.warn("Ignoring - not of form 'DNPM UF Einzelempfehlung'!");

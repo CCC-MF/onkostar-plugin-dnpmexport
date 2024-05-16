@@ -25,7 +25,10 @@
 package de.ukw.ccc.dnpmexport.mapper;
 
 import de.itc.onkostar.api.Procedure;
-import de.ukw.ccc.bwhc.dto.*;
+import de.ukw.ccc.bwhc.dto.Diagnosis;
+import de.ukw.ccc.bwhc.dto.Icd10;
+import de.ukw.ccc.bwhc.dto.IcdO3T;
+import de.ukw.ccc.bwhc.dto.WhoGrade;
 
 import java.util.Optional;
 
@@ -51,15 +54,19 @@ public class KlinikAnamneseToDiagnoseMapper extends KlinikAnamneseMapper<Optiona
         }
 
         var icd10 = procedure.getValue("ICD10").getString();
-        var icd10Version = procedure.getValue("ICD10").getPropertyCatalogueVersion();
         if (null != icd10) {
-            builder.withIcd10(Icd10.builder().withCode(icd10).withVersion(icd10Version).build());
+            final var icd10Builder = Icd10.builder().withCode(icd10);
+            mapperUtils.getSanitizedPropertyCatalogueVersionString(procedure.getValue("ICD10"))
+                    .ifPresent(icd10Builder::withVersion);
+            builder.withIcd10(icd10Builder.build());
         }
 
         var icd03T = procedure.getValue("ICDO3Lokalisation").getString();
-        var icd03TVersion = procedure.getValue("ICDO3Lokalisation").getPropertyCatalogueVersion();
         if (null != icd03T) {
-            builder.withIcdO3T(IcdO3T.builder().withCode(icd03T).withVersion(icd03TVersion).build());
+            final var icdO3TBuilder = IcdO3T.builder().withCode(icd03T);
+            mapperUtils.getSanitizedPropertyCatalogueVersionString(procedure.getValue("ICDO3Lokalisation"))
+                    .ifPresent(icdO3TBuilder::withVersion);
+            builder.withIcdO3T(icdO3TBuilder.build());
         }
 
         var whoGrade = mapWhoGrade(procedure.getValue("WHOGrad").getString());
