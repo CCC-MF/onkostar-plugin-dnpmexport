@@ -27,6 +27,7 @@ package de.ukw.ccc.dnpmexport.mapper;
 import de.itc.onkostar.api.Procedure;
 import de.ukw.ccc.bwhc.dto.History;
 import de.ukw.ccc.bwhc.dto.MolekularTherapyReasonStopped;
+import de.ukw.ccc.bwhc.dto.NotDoneReason;
 import de.ukw.ccc.bwhc.dto.PeriodStartEnd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,11 +115,10 @@ public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
             builder.withReasonStopped(mapReasonStopped(reasonStopped.getString()));
         }
 
-        // Todo: Include in DTO
-        /*var reasonNotDone = procedure.getValue(FIELD_NAME_REASON_NOT_DONE);
+        var reasonNotDone = procedure.getValue(FIELD_NAME_REASON_NOT_DONE);
         if (null != reasonNotDone) {
-            builder.withReasonNotDone(mapReasonStopped(reasonNotDone.getString()));
-        }*/
+            builder.withNotDoneReason(mapNotDoneReason(reasonNotDone.getString()));
+        }
 
         return Optional.of(builder.build());
     }
@@ -193,5 +193,48 @@ public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
         }
 
         return MolekularTherapyReasonStopped.builder().withCode(reason).build();
+    }
+
+    private static NotDoneReason mapNotDoneReason(String value) {
+        NotDoneReason.NotDoneReasonCode reasonCode;
+
+        switch (value) {
+            case "a":
+                reasonCode = NotDoneReason.NotDoneReasonCode.PAYMENT_REFUSED;
+                break;
+            case "n":
+                reasonCode = NotDoneReason.NotDoneReasonCode.PAYMENT_PENDING;
+                break;
+            case "k":
+                reasonCode = NotDoneReason.NotDoneReasonCode.NO_INDICATION;
+                break;
+            case "m":
+                reasonCode = NotDoneReason.NotDoneReasonCode.MEDICAL_REASON;
+                break;
+            case "p":
+                reasonCode = NotDoneReason.NotDoneReasonCode.PATIENT_REFUSAL;
+                break;
+            case "t":
+                reasonCode = NotDoneReason.NotDoneReasonCode.PATIENT_DEATH;
+                break;
+            case "b":
+                reasonCode = NotDoneReason.NotDoneReasonCode.OTHER_THERAPY_CHOSEN;
+                break;
+            case "e":
+                reasonCode = NotDoneReason.NotDoneReasonCode.CONTINUED_EXTERNALLY;
+                break;
+            case "l":
+                reasonCode = NotDoneReason.NotDoneReasonCode.LOST_TO_FU;
+                break;
+            case "w":
+                reasonCode = NotDoneReason.NotDoneReasonCode.OTHER;
+                break;
+            case "u":
+            default:
+                reasonCode = NotDoneReason.NotDoneReasonCode.UNKNOWN;
+                break;
+        }
+
+        return NotDoneReason.builder().withCode(reasonCode).build();
     }
 }
