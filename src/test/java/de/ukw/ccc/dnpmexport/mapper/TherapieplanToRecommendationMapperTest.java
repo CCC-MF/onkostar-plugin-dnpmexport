@@ -25,60 +25,54 @@
 package de.ukw.ccc.dnpmexport.mapper;
 
 import de.itc.onkostar.api.IOnkostarApi;
-import de.itc.onkostar.api.Item;
+import de.ukw.ccc.bwhc.dto.Medication;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Instant;
-import java.util.Date;
+import java.util.List;
 
-import static de.ukw.ccc.dnpmexport.mapper.FollowUpToClaimMapper.*;
-import static de.ukw.ccc.dnpmexport.test.TestUtils.createFollowUpProcedure;
+import static de.ukw.ccc.dnpmexport.test.TestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 
 @ExtendWith(MockitoExtension.class)
-public class FollowUpToClaimMapperTest {
+public class TherapieplanToRecommendationMapperTest {
 
     private IOnkostarApi onkostarApi;
-    private FollowUpToClaimMapper mapper;
+    private TherapieplanToRecommendationMapper mapper;
 
     @BeforeEach
     void setUp(
             @Mock IOnkostarApi onkostarApi
     ) {
         this.onkostarApi = onkostarApi;
-        this.mapper = new FollowUpToClaimMapper(new MapperUtils(onkostarApi));
+        this.mapper = new TherapieplanToRecommendationMapper(new MapperUtils(onkostarApi));
     }
 
     @Test
-    void shouldMapToClaim() {
-        var procedure = createFollowUpProcedure(this.onkostarApi);
-        procedure.setValue(FIELD_NAME_USE, new Item(FIELD_NAME_USE, "1"));
-        procedure.setValue(FIELD_NAME_ISSUED_ON, new Item(FIELD_NAME_ISSUED_ON, Date.from(Instant.parse("2024-05-13T12:00:00Z"))));
-        procedure.setValue(FIELD_NAME_THERAPY, new Item(FIELD_NAME_THERAPY, "1234"));
+    void shouldMapToRecommendation() throws Exception {
+        var procedure = createTherapieplanProcedure(this.onkostarApi);
+        var einzelempfehlung = createEinzelempfehlungProcedure(
+                this.onkostarApi,
+                procedure,
+                List.of(Medication.builder().withCode("Test").withSystem(Medication.System.UNREGISTERED).build())
+        );
+        procedure.addSubProcedure("Einzelempfehlung", einzelempfehlung);
 
-        var claim = this.mapper.apply(procedure);
+        doAnswer(invocationOnMock -> List.of(createDisease(this.onkostarApi))).when(onkostarApi).getDiseasesByProcedureId(anyInt());
+        doAnswer(invocationOnMock -> List.of(einzelempfehlung)).when(onkostarApi).getProceduresForDiseaseByForm(anyInt(), anyString());
 
-        assertThat(claim).isNotEmpty();
-        assertThat(claim.get().getId()).matches("UNKNOWN[a-z0-9]+");
-        assertThat(claim.get().getPatient()).isEqualTo("2000123456");
-        assertThat(claim.get().getIssuedOn()).isEqualTo("2024-05-13");
-        assertThat(claim.get().getTherapy()).matches("UNKNOWN[a-z0-9]+");
-    }
+        var recommendations = this.mapper.apply(procedure);
 
-    @Test
-    void shouldNotMapToClaimIfNoRequest() {
-        var procedure = createFollowUpProcedure(this.onkostarApi);
-        procedure.setValue(FIELD_NAME_USE, new Item(FIELD_NAME_USE, "0"));
-        procedure.setValue(FIELD_NAME_ISSUED_ON, new Item(FIELD_NAME_ISSUED_ON, Date.from(Instant.parse("2024-05-13T12:00:00Z"))));
-        procedure.setValue(FIELD_NAME_THERAPY, new Item(FIELD_NAME_THERAPY, "1234"));
-
-        var claim = this.mapper.apply(procedure);
-
-        assertThat(claim).isEmpty();
+        assertThat(recommendations).isNotEmpty();
+        assertThat(recommendations.get(0).getId()).matches("UNKNOWN[a-z0-9]+");
+        assertThat(recommendations.get(0).getMedication()).hasSize(1);
+        assertThat(recommendations.get(0).getMedication().get(0)).isEqualTo(Medication.builder().withCode("Test").withSystem(Medication.System.UNREGISTERED).build());
     }
 
 }

@@ -32,6 +32,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -168,6 +169,167 @@ public class MapperUtils {
      */
     public Stream<Procedure> getTherapieplanRelatedToKlinikAnamnese(Procedure procedure) {
         return getTherapieplanRelatedToKlinikAnamnese(procedure, true);
+    }
+
+    /**
+     * Stream of procedures for 'DNPM UF Einzelempfehlung' related to given procedure for 'DNPM Therapieplan'
+     *
+     * @param procedure  A procedure for 'DNPM Therapieplan'
+     * @param lockedOnly include locked procedures only
+     * @return Stream of procedures
+     */
+    public Stream<Procedure> getEinzelempfehlungRelatedToTherapieplan(Procedure procedure, boolean lockedOnly) {
+        if (!"DNPM Therapieplan".equals(procedure.getFormName())) {
+            logger.warn("Ignoring - not of form 'DNPM Therapieplan'!");
+            return Stream.empty();
+        }
+        if (procedure.getDiseases().size() != 1) {
+            logger.warn("Ignoring - more than one disease!");
+            return Stream.empty();
+        }
+        return onkostarApi.getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM UF Einzelempfehlung").stream()
+                .filter(p -> procedure.getId().equals(p.getParentProcedureId()))
+                .filter(p -> !lockedOnly || p.getEditState() == ProcedureEditStateType.COMPLETED);
+    }
+
+    /**
+     * Stream of locked procedures for 'DNPM UF Einzelempfehlung' related to given procedure for 'DNPM Therapieplan'
+     *
+     * @param procedure A procedure for 'DNPM Therapieplan'
+     * @return Stream of locked procedures
+     */
+    public Stream<Procedure> getEinzelempfehlungRelatedToTherapieplan(Procedure procedure) {
+        return getEinzelempfehlungRelatedToTherapieplan(procedure, true);
+    }
+
+    /**
+     * Stream of procedures for 'DNPM FollowUp' related to given procedure for 'DNPM UF Einzelempfehlung'
+     *
+     * @param procedure  A procedure for 'DNPM UF Einzelempfehlung'
+     * @param lockedOnly include locked procedures only
+     * @return Stream of procedures
+     */
+    public Stream<Procedure> getFollowUpsRelatedToEinzelempfehlung(Procedure procedure, boolean lockedOnly) {
+        if (!"DNPM UF Einzelempfehlung".equals(procedure.getFormName())) {
+            logger.warn("Ignoring - not of form 'DNPM UF Einzelempfehlung'!");
+            return Stream.empty();
+        }
+        if (procedure.getDiseases().size() != 1) {
+            logger.warn("Ignoring - more than one disease!");
+            return Stream.empty();
+        }
+        return onkostarApi.getProceduresForDiseaseByForm(procedure.getDiseaseIds().get(0), "DNPM FollowUp").stream()
+                .filter(p -> {
+                    var refId = p.getValue("LinkTherapieempfehlung").getInt();
+                    return procedure.getId().equals(refId);
+                })
+                .filter(p -> !lockedOnly || p.getEditState() == ProcedureEditStateType.COMPLETED)
+                .sorted(Comparator.comparing(Procedure::getId));
+    }
+
+    /**
+     * Stream of locked procedures for 'DNPM FollowUp' related to given procedure for 'DNPM UF Einzelempfehlung'
+     *
+     * @param procedure  A procedure for 'DNPM UF Einzelempfehlung'
+     * @return Stream of locked procedures
+     */
+    public Stream<Procedure> getFollowUpsRelatedToEinzelempfehlung(Procedure procedure) {
+        return getFollowUpsRelatedToEinzelempfehlung(procedure, true);
+    }
+
+    /**
+     * Finds related Procedure for 'DNPM UF Einzelempfehlung' related to given procedure for 'DNPM FollowUp'
+     * @param procedure A procedure for 'DNPM FollowUp'
+     * @return Optional of related procedure
+     */
+    public Optional<Procedure> findEinzelempfehlungRelatedToFollowUp(Procedure procedure) {
+        if (null == procedure || !procedure.getFormName().equals("DNPM FollowUp")) {
+            logger.warn("Not a form of type 'DNPM FollowUp'");
+            return Optional.empty();
+        }
+        var procedureId = procedure.getValue("LinkTherapieempfehlung");
+        if (null == procedureId) {
+            logger.warn("No reference to 'DNPM UF Einzelempfehlung' given in 'DNPM FollowUp': {}", procedure.getId());
+            return Optional.empty();
+        }
+        var einzelempfehlung = onkostarApi.getProcedure(procedureId.getInt());
+        if (null == einzelempfehlung || !einzelempfehlung.getFormName().equals("DNPM UF Einzelempfehlung")) {
+            logger.warn("No form of type 'DNPM UF Einzelempfehlung' found for 'DNPM FollowUp': {}", procedure.getId());
+            return Optional.empty();
+        }
+        return Optional.of(einzelempfehlung);
+    }
+
+    /**
+     * Finds related Procedure for 'DNPM Therapieplan' related to given procedure for 'DNPM UF Einzelempfehlung'
+     * @param procedure A procedure for 'DNPM UF Einzelempfehlung'
+     * @return Optional of related procedure
+     */
+    public Optional<Procedure> findTherapieplanRelatedToEinzelempfehlung(Procedure procedure) {
+        if (null == procedure || !procedure.getFormName().equals("DNPM UF Einzelempfehlung")) {
+            logger.warn("Not a form of type 'DNPM UF Einzelempfehlung'");
+            return Optional.empty();
+        }
+        var therapieplan = onkostarApi.getProcedure(procedure.getParentProcedureId());
+        if (null == therapieplan || !therapieplan.getFormName().equals("DNPM Therapieplan")) {
+            logger.warn("No parent form of type 'DNPM Therapieplan' found for 'DNPM UF Einzelempfehlung': {}", procedure.getId());
+            return Optional.empty();
+        }
+        return Optional.of(therapieplan);
+    }
+
+    /**
+     * Finds related Procedure for 'DNPM Klinik/Anamnese' related to given procedure for 'DNPM Therapieplan'
+     * @param procedure A procedure for 'DNPM Therapieplan'
+     * @return Optional of related procedure
+     */
+    public Optional<Procedure> findKlinikAnamneseRelatedToTherapieplan(Procedure procedure) {
+        if (null == procedure || !procedure.getFormName().equals("DNPM Therapieplan")) {
+            logger.warn("Not a form of type 'DNPM Therapieplan'");
+            return Optional.empty();
+        }
+        var klinikAnamnese = procedure.getValue("refdnpmklinikanamnese");
+        if (null == klinikAnamnese) {
+            logger.warn("No reference to 'DNPM KlinikAnamnese' given in 'DNPM Therapieplan': {}", procedure.getId());
+            return Optional.empty();
+        }
+        var result = onkostarApi.getProcedure(klinikAnamnese.getInt());
+        if (null == result || !result.getFormName().equals("DNPM Klinik/Anamnese")) {
+            logger.warn("No form of type 'DNPM Klinik/Anamnese' found: {}", klinikAnamnese.getInt());
+            return Optional.empty();
+        }
+        return Optional.of(result);
+    }
+
+    /**
+     * Returns sanitized String for ICD-10 and ICD-O-3-Location Property Catalogue Version
+     * This will return Optional.empty() if nothing can be applied.
+     *
+     * @param item The Item to get sanitized Version string for
+     * @return The optional String
+     */
+    public Optional<String> getSanitizedPropertyCatalogueVersionString(Item item) {
+        if (null == item || null == item.getPropertyCatalogueVersion()) {
+            return Optional.empty();
+        }
+
+        try {
+            final var oid = this.onkostarApi().getPropertyCatalogueVersionOid(Integer.parseInt(item.getPropertyCatalogueVersion()));
+            if (null == oid) {
+                return Optional.empty();
+            }
+
+            if (oid.startsWith("icd10gmversion")) {
+                return Optional.of(oid.replaceAll("icd10gmversion", ""));
+            } else if (oid.startsWith("LOK Version")) {
+                return Optional.of(oid.replaceAll("LOK Version", ""));
+            }
+        } catch (Exception e) {
+            logger.warn("Cannot parse property catalogue version as Integer: {}", item.getPropertyCatalogueVersion());
+            return Optional.empty();
+        }
+
+        return Optional.empty();
     }
 
     public String einzelempfehlungMtbDate(Procedure procedure) {

@@ -71,14 +71,38 @@ public class DnpmExportService {
                 sendDeleteRequest(procedure.getPatient().getPatientId());
             }
         } else if (procedure.getFormName().equals("DNPM Therapieplan")) {
-            var procedureId = procedure.getValue("refdnpmklinikanamnese").getInt();
-            var p = onkostarApi.getProcedure(procedureId);
-            if (null != p && shouldExportMtbFile(p).orElse(false)) {
-                exportKlinikAnamneseRelatedData(onkostarApi.getProcedure(procedureId)).ifPresent(this::sendMtbFileRequest);
-            } else {
-                sendDeleteRequest(procedure.getPatient().getPatientId());
-            }
+            findRelatedKlinikAnamnese(procedure)
+                    .ifPresent(klinikAnamnese -> {
+                        if (shouldExportMtbFile(klinikAnamnese).orElse(false)) {
+                            exportKlinikAnamneseRelatedData(klinikAnamnese).ifPresent(this::sendMtbFileRequest);
+                        } else {
+                            sendDeleteRequest(procedure.getPatient().getPatientId());
+                        }
+                    });
+        } else if (procedure.getFormName().equals("DNPM FollowUp")) {
+            findRelatedEinzelempfehlung(procedure)
+                    .flatMap(this::findParentTherapieplan)
+                    .flatMap(this::findRelatedKlinikAnamnese)
+                    .ifPresent(klinikAnamnese -> {
+                        if (shouldExportMtbFile(klinikAnamnese).orElse(false)) {
+                            exportKlinikAnamneseRelatedData(klinikAnamnese).ifPresent(this::sendMtbFileRequest);
+                        } else {
+                            sendDeleteRequest(procedure.getPatient().getPatientId());
+                        }
+                    });
         }
+    }
+
+    private Optional<Procedure> findRelatedEinzelempfehlung(Procedure procedure) {
+        return mapperUtils.findEinzelempfehlungRelatedToFollowUp(procedure);
+    }
+
+    private Optional<Procedure> findParentTherapieplan(Procedure procedure) {
+        return mapperUtils.findTherapieplanRelatedToEinzelempfehlung(procedure);
+    }
+
+    private Optional<Procedure> findRelatedKlinikAnamnese(Procedure procedure) {
+        return mapperUtils.findKlinikAnamneseRelatedToTherapieplan(procedure);
     }
 
     private void sendMtbFileRequest(MtbFile mtbFile) throws ExportException {
@@ -210,6 +234,12 @@ public class DnpmExportService {
 
         result.getNgsReports().addAll(getNgsReports(procedure));
 
+        /* FollowUp */
+
+        result.getClaims().addAll(getClaims(procedure));
+        result.getClaimResponses().addAll(getClaimResponses(procedure));
+        result.getMolecularTherapies().addAll(getMolecularTherapies(procedure));
+
         return Optional.of(result);
     }
 
@@ -305,6 +335,54 @@ public class DnpmExportService {
                 )
                 .filter(Optional::isPresent)
                 .map(Optional::get)
+                .collect(Collectors.toList());
+    }
+
+    private List<Claim> getClaims(Procedure procedure) {
+        return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
+                .flatMap(
+                        mapperUtils::getEinzelempfehlungRelatedToTherapieplan
+                )
+                .flatMap(
+                        mapperUtils::getFollowUpsRelatedToEinzelempfehlung
+                )
+                .map(
+                        p -> new FollowUpToClaimMapper(mapperUtils).apply(p)
+                )
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+    }
+
+    private List<ClaimResponse> getClaimResponses(Procedure procedure) {
+        return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
+                .flatMap(
+                        mapperUtils::getEinzelempfehlungRelatedToTherapieplan
+                )
+                .flatMap(
+                        mapperUtils::getFollowUpsRelatedToEinzelempfehlung
+                )
+                .map(
+                        p -> new FollowUpToClaimResponseMapper(mapperUtils).apply(p)
+                )
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+    }
+
+    private List<MolecularTherapy> getMolecularTherapies(Procedure procedure) {
+        return mapperUtils.getTherapieplanRelatedToKlinikAnamnese(procedure)
+                .flatMap(
+                        mapperUtils::getEinzelempfehlungRelatedToTherapieplan
+                )
+                .map(
+                        mapperUtils::getFollowUpsRelatedToEinzelempfehlung
+                )
+                .map(
+                        einzelempfehlung -> new MolecularTherapy(
+                                einzelempfehlung.map(p -> new FollowUpToHistoryMapper(mapperUtils).apply(p)).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList())
+                        )
+                )
                 .collect(Collectors.toList());
     }
 

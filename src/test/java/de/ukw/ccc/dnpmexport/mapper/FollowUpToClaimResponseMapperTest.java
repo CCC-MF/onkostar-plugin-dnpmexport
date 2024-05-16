@@ -26,6 +26,7 @@ package de.ukw.ccc.dnpmexport.mapper;
 
 import de.itc.onkostar.api.IOnkostarApi;
 import de.itc.onkostar.api.Item;
+import de.ukw.ccc.bwhc.dto.ClaimResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,50 +36,40 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Instant;
 import java.util.Date;
 
-import static de.ukw.ccc.dnpmexport.mapper.FollowUpToClaimMapper.*;
+import static de.ukw.ccc.dnpmexport.mapper.FollowUpToClaimResponseMapper.*;
 import static de.ukw.ccc.dnpmexport.test.TestUtils.createFollowUpProcedure;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-public class FollowUpToClaimMapperTest {
+public class FollowUpToClaimResponseMapperTest {
 
     private IOnkostarApi onkostarApi;
-    private FollowUpToClaimMapper mapper;
+    private FollowUpToClaimResponseMapper mapper;
 
     @BeforeEach
     void setUp(
             @Mock IOnkostarApi onkostarApi
     ) {
         this.onkostarApi = onkostarApi;
-        this.mapper = new FollowUpToClaimMapper(new MapperUtils(onkostarApi));
+        this.mapper = new FollowUpToClaimResponseMapper(new MapperUtils(onkostarApi));
     }
 
     @Test
-    void shouldMapToClaim() {
+    void shouldMapToClaimResponse() {
         var procedure = createFollowUpProcedure(this.onkostarApi);
-        procedure.setValue(FIELD_NAME_USE, new Item(FIELD_NAME_USE, "1"));
-        procedure.setValue(FIELD_NAME_ISSUED_ON, new Item(FIELD_NAME_ISSUED_ON, Date.from(Instant.parse("2024-05-13T12:00:00Z"))));
-        procedure.setValue(FIELD_NAME_THERAPY, new Item(FIELD_NAME_THERAPY, "1234"));
+        procedure.setValue(FIELD_NAME_ISSUED_ON, new Item(DC_FIELD_NAME_ISSUED_ON, Date.from(Instant.parse("2024-05-13T12:00:00Z"))));
+        procedure.setValue(FIELD_NAME_STATUS, new Item(FIELD_NAME_STATUS, "rejected"));
+        procedure.setValue(FIELD_NAME_REASON, new Item(FIELD_NAME_REASON, "e"));
 
-        var claim = this.mapper.apply(procedure);
+        var claimResponse = this.mapper.apply(procedure);
 
-        assertThat(claim).isNotEmpty();
-        assertThat(claim.get().getId()).matches("UNKNOWN[a-z0-9]+");
-        assertThat(claim.get().getPatient()).isEqualTo("2000123456");
-        assertThat(claim.get().getIssuedOn()).isEqualTo("2024-05-13");
-        assertThat(claim.get().getTherapy()).matches("UNKNOWN[a-z0-9]+");
-    }
-
-    @Test
-    void shouldNotMapToClaimIfNoRequest() {
-        var procedure = createFollowUpProcedure(this.onkostarApi);
-        procedure.setValue(FIELD_NAME_USE, new Item(FIELD_NAME_USE, "0"));
-        procedure.setValue(FIELD_NAME_ISSUED_ON, new Item(FIELD_NAME_ISSUED_ON, Date.from(Instant.parse("2024-05-13T12:00:00Z"))));
-        procedure.setValue(FIELD_NAME_THERAPY, new Item(FIELD_NAME_THERAPY, "1234"));
-
-        var claim = this.mapper.apply(procedure);
-
-        assertThat(claim).isEmpty();
+        assertThat(claimResponse).isNotEmpty();
+        assertThat(claimResponse.get().getId()).matches("UNKNOWN[a-z0-9]+");
+        assertThat(claimResponse.get().getPatient()).isEqualTo("2000123456");
+        assertThat(claimResponse.get().getClaim()).isEqualTo(claimResponse.get().getId());
+        assertThat(claimResponse.get().getIssuedOn()).isEqualTo("2024-05-13");
+        assertThat(claimResponse.get().getStatus()).isEqualTo(ClaimResponse.ClaimStatus.REJECTED);
+        assertThat(claimResponse.get().getReason()).isEqualTo(ClaimResponse.Reason.INSUFFICIENT_EVIDENCE);
     }
 
 }
