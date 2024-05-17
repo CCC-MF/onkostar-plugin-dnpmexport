@@ -379,8 +379,8 @@ public class DnpmExportService {
                         mapperUtils::getFollowUpsRelatedToEinzelempfehlung
                 )
                 .map(
-                        einzelempfehlung -> new MolecularTherapy(
-                                einzelempfehlung.map(p -> new FollowUpToHistoryMapper(mapperUtils).apply(p)).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList())
+                        followUp -> new MolecularTherapy(
+                                followUp.map(p -> new FollowUpToHistoryMapper(mapperUtils).apply(p)).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList())
                         )
                 )
                 .collect(Collectors.toList());
