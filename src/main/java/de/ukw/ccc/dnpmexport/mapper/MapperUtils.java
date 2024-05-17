@@ -138,6 +138,42 @@ public class MapperUtils {
     }
 
     /**
+     * Stream of procedures for 'OS.Molekulargenetik' related to given procedure for 'DNPM UF Einzelempfehlung'
+     *
+     * @param procedure  A procedure for 'DNPM UF Einzelempfehlung'
+     * @param lockedOnly include locked procedures only
+     * @return Stream of procedures
+     */
+    public Stream<Integer> getMolekulargenetikProcedureIdsForEinzelempfehlung(Procedure procedure, boolean lockedOnly) {
+        if (null == procedure || !procedure.getFormName().equals("DNPM UF Einzelempfehlung")) {
+            logger.warn("Ignoring - not of form 'DNPM UF Einzelempfehlung'!");
+            return Stream.empty();
+        }
+
+        var refIds = procedure.getValue("refosmolekulargenetik");
+        if (null == refIds) {
+            return Stream.empty();
+        }
+
+        return Stream.of(refIds.getInt())
+                .map(onkostarApi::getProcedure)
+                .filter(Objects::nonNull)
+                .filter(p -> "OS.Molekulargenetik".equals(p.getFormName()))
+                .filter(p -> !lockedOnly || p.getEditState() == ProcedureEditStateType.COMPLETED)
+                .map(Procedure::getId);
+    }
+
+    /**
+     * Stream of locked procedures for 'OS.Molekulargenetik' related to given procedure for 'DNPM UF Einzelempfehlung'
+     *
+     * @param procedure A procedure for 'DNPM UF Einzelempfehlung'
+     * @return Stream of locked procedures
+     */
+    public Stream<Integer> getMolekulargenetikProcedureIdsForEinzelempfehlung(Procedure procedure) {
+        return getMolekulargenetikProcedureIdsForTherapieplan(procedure, true);
+    }
+
+    /**
      * Stream of procedures for 'DNPM Therapieplan' related to given procedure for 'DNPM Klinik/Anamnese'
      *
      * @param procedure  A procedure for 'DNPM Klink/Anamnese'
