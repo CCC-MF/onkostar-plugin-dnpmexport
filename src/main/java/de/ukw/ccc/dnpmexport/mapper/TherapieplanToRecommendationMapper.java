@@ -63,6 +63,10 @@ public class TherapieplanToRecommendationMapper extends TherapieplanMapper<List<
                             //.withSupportingVariants() // TODO: Einfügen, wenn OS.Molekulargenetik fertig
                             ;
 
+                    // Aktuell nur eine einzige Referenz, später ggf mehrere in Datenmodell V2
+                    mapperUtils.getMolekulargenetikProcedureIdsForEinzelempfehlung(p)
+                            .forEach(molgen -> builder.withNgsReport(molgen.toString()));
+
                     mapperUtils.findKlinikAnamneseRelatedToTherapieplan(procedure)
                             .ifPresent(klinikAnamnese -> builder.withDiagnosis(mapperUtils.anonymizeId(klinikAnamnese.getId().toString())));
 
