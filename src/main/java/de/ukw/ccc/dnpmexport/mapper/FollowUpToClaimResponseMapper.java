@@ -38,7 +38,8 @@ public class FollowUpToClaimResponseMapper extends FollowUpMapper<Optional<Claim
     static final String FIELD_NAME_ISSUED_ON = "DatumAntwortKueAntrag";
     static final String DC_FIELD_NAME_ISSUED_ON = "DatumAntwortKueAntrag";
     static final String FIELD_NAME_STATUS = "StatusKostenuebernahme";
-    static final String FIELD_NAME_REASON = "AblehnungKosten";
+    static final String FIELD_NAME_REASON = "GrundAblehnungKosten";
+    static final String DC_FIELD_NAME_REASON = "AblehnungKosten";
 
     public FollowUpToClaimResponseMapper(final MapperUtils mapperUtils) {
         super(mapperUtils);
