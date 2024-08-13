@@ -61,7 +61,8 @@ public class TherapieplanToRecommendationMapper extends TherapieplanMapper<List<
                             .withPriority(priority(p))
                             //.withSupportingVariants() // TODO: Einfügen, wenn OS.Molekulargenetik fertig
                             ;
-                    var issuedOn = issuedOn(p);
+
+                    var issuedOn = mapperUtils.einzelempfehlungMtbDate(p);
                     if (issuedOn != null && !issuedOn.isEmpty()) {
                             builder.withIssuedOn(issuedOn);
                     }
@@ -84,10 +85,6 @@ public class TherapieplanToRecommendationMapper extends TherapieplanMapper<List<
                     return recommendation;
                 })
                 .collect(Collectors.toList());
-    }
-
-    private String issuedOn(Procedure procedure) {
-        return mapperUtils.einzelempfehlungMtbDate(procedure);
     }
 
     private Recommendation.Priority priority(Procedure procedure) {
