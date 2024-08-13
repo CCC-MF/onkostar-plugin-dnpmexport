@@ -25,6 +25,7 @@
 package de.ukw.ccc.dnpmexport.mapper;
 
 import de.itc.onkostar.api.IOnkostarApi;
+import de.itc.onkostar.api.Item;
 import de.ukw.ccc.bwhc.dto.Medication;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 import static de.ukw.ccc.dnpmexport.test.TestUtils.*;
@@ -73,6 +76,54 @@ public class TherapieplanToRecommendationMapperTest {
         assertThat(recommendations.get(0).getId()).matches("UNKNOWN[a-z0-9]+");
         assertThat(recommendations.get(0).getMedication()).hasSize(1);
         assertThat(recommendations.get(0).getMedication().get(0)).isEqualTo(Medication.builder().withCode("Test").withSystem(Medication.System.UNREGISTERED).build());
+    }
+
+    @Test
+    void shouldIncludeIssuedOnDateForRecommendation() throws Exception {
+        var issuedOn = Date.from(Instant.parse("2024-08-13T12:00:00Z"));
+
+        var procedure = createTherapieplanProcedure(this.onkostarApi);
+        var einzelempfehlung = createEinzelempfehlungProcedure(
+                this.onkostarApi,
+                procedure,
+                List.of(Medication.builder().withCode("Test").withSystem(Medication.System.UNREGISTERED).build())
+        );
+
+        // Replace date with empty string for test purposes
+        einzelempfehlung.setValue("ufeedatum", new Item("datum", issuedOn));
+
+        procedure.addSubProcedure("Einzelempfehlung", einzelempfehlung);
+
+        doAnswer(invocationOnMock -> List.of(createDisease(this.onkostarApi))).when(onkostarApi).getDiseasesByProcedureId(anyInt());
+        doAnswer(invocationOnMock -> List.of(einzelempfehlung)).when(onkostarApi).getProceduresForDiseaseByForm(anyInt(), anyString());
+
+        var recommendations = this.mapper.apply(procedure);
+
+        assertThat(recommendations).isNotEmpty();
+        assertThat(recommendations.get(0).getIssuedOn()).isEqualTo(issuedOn.toString());
+    }
+
+    @Test
+    void shouldNotIncludeEmptyIssuedOnDateForRecommendation() throws Exception {
+        var procedure = createTherapieplanProcedure(this.onkostarApi);
+        var einzelempfehlung = createEinzelempfehlungProcedure(
+                this.onkostarApi,
+                procedure,
+                List.of(Medication.builder().withCode("Test").withSystem(Medication.System.UNREGISTERED).build())
+        );
+
+        // Replace date with empty string for test purposes
+        einzelempfehlung.setValue("ufeedatum", new Item("datum", ""));
+
+        procedure.addSubProcedure("Einzelempfehlung", einzelempfehlung);
+
+        doAnswer(invocationOnMock -> List.of(createDisease(this.onkostarApi))).when(onkostarApi).getDiseasesByProcedureId(anyInt());
+        doAnswer(invocationOnMock -> List.of(einzelempfehlung)).when(onkostarApi).getProceduresForDiseaseByForm(anyInt(), anyString());
+
+        var recommendations = this.mapper.apply(procedure);
+
+        assertThat(recommendations).isNotEmpty();
+        assertThat(recommendations.get(0).getIssuedOn()).isNull();
     }
 
 }
