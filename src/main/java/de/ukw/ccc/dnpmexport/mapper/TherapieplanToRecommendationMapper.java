@@ -53,7 +53,7 @@ public class TherapieplanToRecommendationMapper extends TherapieplanMapper<List<
                 .stream()
                 .filter(p -> p.getParentProcedureId() == procedure.getId())
                 .map(p -> {
-                    var molgenref = procedure.getValue("refosmolekulargenetik");
+                    var molgenref = p.getValue("refosmolekulargenetik");
                     var builder = Recommendation.builder()
                             .withId(anonymizeId(p))
                             .withPatient(getPatientId(procedure))
