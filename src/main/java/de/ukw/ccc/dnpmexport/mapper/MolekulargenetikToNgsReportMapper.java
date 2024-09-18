@@ -81,7 +81,7 @@ public class MolekulargenetikToNgsReportMapper extends MolekulargenetikMapper<Op
                 .stream()
                 .filter(p -> p.getParentProcedureId() == procedure.getId())
                 // Einfache Variante
-                .filter(p -> p.getValue("Ergebnis").toString().equals("P"))
+                .filter(p -> p.getValue("Ergebnis").getString().equals("P"))
                 .map(
                         p -> {
                             var builder = SimpleVariant.builder().withId(anonymizeId(p));
