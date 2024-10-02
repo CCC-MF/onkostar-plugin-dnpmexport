@@ -52,7 +52,7 @@ public class FollowUpToResponseMapper extends FollowUpMapper<Optional<Response>>
         }
 
         var therapyId = procedure.getValue(FIELD_NAME_THERAPY);
-        if (null == therapyId || therapyId.toString().isBlank()) {
+        if (null == therapyId || therapyId.getString().isBlank()) {
             return Optional.empty();
         }
 
