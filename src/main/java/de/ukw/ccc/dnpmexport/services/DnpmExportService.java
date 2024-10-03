@@ -49,6 +49,11 @@ import java.util.stream.Collectors;
 @Service
 public class DnpmExportService {
 
+    public static final String FORMNAME_DNPM_KLINIK_ANAMNESE = "DNPM Klinik/Anamnese";
+    public static final String FORMNAME_DNPM_THERAPIEPLAN = "DNPM Therapieplan";
+    public static final String FORMNAME_DNPM_FOLLOW_UP = "DNPM FollowUp";
+    public static final String FORMFIELD_DNPMEXPORT_EXPORT_CONSENT_REJECTED = "dnpmexport_export_consent_rejected";
+
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final IOnkostarApi onkostarApi;
@@ -64,13 +69,13 @@ public class DnpmExportService {
     }
 
     public void export(Procedure procedure) throws ExportException {
-        if (procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
+        if (procedure.getFormName().equals(FORMNAME_DNPM_KLINIK_ANAMNESE)) {
             if (shouldExportMtbFile(procedure).orElse(false)) {
                 exportKlinikAnamneseRelatedData(procedure).ifPresent(this::sendMtbFileRequest);
             } else {
                 sendDeleteRequest(procedure.getPatient().getPatientId());
             }
-        } else if (procedure.getFormName().equals("DNPM Therapieplan")) {
+        } else if (procedure.getFormName().equals(FORMNAME_DNPM_THERAPIEPLAN)) {
             findRelatedKlinikAnamnese(procedure)
                     .ifPresent(klinikAnamnese -> {
                         if (shouldExportMtbFile(klinikAnamnese).orElse(false)) {
@@ -79,7 +84,7 @@ public class DnpmExportService {
                             sendDeleteRequest(procedure.getPatient().getPatientId());
                         }
                     });
-        } else if (procedure.getFormName().equals("DNPM FollowUp")) {
+        } else if (procedure.getFormName().equals(FORMNAME_DNPM_FOLLOW_UP)) {
             findRelatedEinzelempfehlung(procedure)
                     .flatMap(this::findParentTherapieplan)
                     .flatMap(this::findRelatedKlinikAnamnese)
@@ -156,15 +161,15 @@ public class DnpmExportService {
     }
 
     private Optional<Boolean> shouldExportMtbFile(Procedure procedure) {
-        if (null == procedure || !procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
+        if (null == procedure || !procedure.getFormName().equals(FORMNAME_DNPM_KLINIK_ANAMNESE)) {
             logger.warn("Ignoring - not of form 'DNPM Klinik/Anamnese'!");
             return Optional.empty();
         }
 
         var consent = new KlinikAnamneseToConsentMapper(mapperUtils).apply(procedure);
 
-        var exportWithConsentRejected = null != onkostarApi.getGlobalSetting("dnpmexport_export_consent_rejected")
-                && onkostarApi.getGlobalSetting("dnpmexport_export_consent_rejected").equals("true");
+        var exportWithConsentRejected = null != onkostarApi.getGlobalSetting(FORMFIELD_DNPMEXPORT_EXPORT_CONSENT_REJECTED)
+                && onkostarApi.getGlobalSetting(FORMFIELD_DNPMEXPORT_EXPORT_CONSENT_REJECTED).equals("true");
 
         return Optional.of(
                 exportWithConsentRejected || (consent.isPresent() && consent.get().getStatus() == Consent.Status.ACTIVE)
@@ -172,7 +177,7 @@ public class DnpmExportService {
     }
 
     private Optional<MtbFile> exportKlinikAnamneseRelatedData(Procedure procedure) {
-        if (null == procedure || !procedure.getFormName().equals("DNPM Klinik/Anamnese")) {
+        if (null == procedure || !procedure.getFormName().equals(FORMNAME_DNPM_KLINIK_ANAMNESE)) {
             logger.warn("Ignoring - not of form 'DNPM Klinik/Anamnese'!");
             return Optional.empty();
         }
@@ -182,8 +187,8 @@ public class DnpmExportService {
         var episode = new KlinikAnamneseToEpisodeMapper(mapperUtils).apply(procedure);
         var diagnose = new KlinikAnamneseToDiagnoseMapper(mapperUtils).apply(procedure);
 
-        var exportWithConsentRejected = null != onkostarApi.getGlobalSetting("dnpmexport_export_consent_rejected")
-                && onkostarApi.getGlobalSetting("dnpmexport_export_consent_rejected").equals("true");
+        var exportWithConsentRejected = null != onkostarApi.getGlobalSetting(FORMFIELD_DNPMEXPORT_EXPORT_CONSENT_REJECTED)
+                && onkostarApi.getGlobalSetting(FORMFIELD_DNPMEXPORT_EXPORT_CONSENT_REJECTED).equals("true");
 
         var mtbFile = MtbFile.builder();
         if (!exportWithConsentRejected && (consent.isEmpty() || consent.get().getStatus() != Consent.Status.ACTIVE)) {
