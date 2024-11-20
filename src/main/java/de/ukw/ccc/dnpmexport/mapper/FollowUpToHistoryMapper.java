@@ -83,7 +83,7 @@ public class FollowUpToHistoryMapper extends FollowUpMapper<Optional<History>> {
         }
 
         var basedOn = procedure.getValue(FIELD_NAME_BASED_ON);
-        if (null != basedOn && basedOn.getString().matches("[0-9]*")) {
+        if (null != basedOn && basedOn.getString().matches("\\d*")) {
             builder.withBasedOn(anonymizeString(basedOn.getString()));
 
             final var einzelempfehlung = mapperUtils.onkostarApi().getProcedure(Integer.parseInt(basedOn.getString()));
