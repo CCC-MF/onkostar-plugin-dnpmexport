@@ -12,10 +12,39 @@ Zum Betrieb dieses Plugins ist die Angabe der URL der Zielanwendung erforderlich
 Dies lässt sich initial durch folgende Datenbankanfrage anlegen, später dann in den allgemeinen Einstellungen von Onkostar auch ändern.
 
 ```
-INSERT INTO einstellung (name, wert, kategorie, beschreibung) VALUES('dnpmexport_url', 'http://localhost:9000/bwhc/etl/api/MTBFile', 'System', 'DNPM-Export - URL');
-INSERT INTO einstellung (name, wert, kategorie, beschreibung) VALUES('dnpmexport_prefix', 'TEST', 'System', 'DNPM-Export - Prefix');
-INSERT INTO einstellung (name, wert, kategorie, optionen, beschreibung) VALUES('dnpmexport_export_consent_rejected', 'false', 'System', '[{"key": "true", "value": "Ja"},{"key": "false", "value": "Nein"}]', 'Exportiere MTB-Daten ohne Consent-Zustimmung');
+INSERT INTO einstellung
+  (name, wert, kategorie, beschreibung) 
+  VALUES(
+    'dnpmexport_url',
+    'http://localhost:9000/bwhc/etl/api/MTBFile',
+    'DNPM',
+    'DNPM-Export - URL'
+  );
+
+INSERT INTO einstellung
+  (name, wert, kategorie, beschreibung)
+  VALUES(
+    'dnpmexport_prefix',
+    'TEST',
+    'DNPM',
+    'DNPM-Export - Prefix'
+  );
+
+INSERT INTO einstellung
+  (name, wert, kategorie, optionen, beschreibung) 
+  VALUES(
+    'dnpmexport_export_consent_rejected',
+    'false',
+    'DNPM',
+    '[{"key": "true", "value": "Ja"},{"key": "false", "value": "Nein"}]',
+    'Exportiere MTB-Daten ohne Consent-Zustimmung'
+  );
 ```
+
+_**Achtung!**_ Die Verwendung der Konfigurationskategorie `DNPM` ist für Onkostar-Versionen **>=2.12.0** und **<2.13.0**
+aufgrund einer Umstellung in der Darstellung der Konfiguration in Onkostar nicht möglich.
+Für Onkostar ab Version **2.13.0** (oder neuer) kann `DNPM` verwendet werden, für Versionen beginnend mit 2.12 sollte
+`System` verwendet werden.
 
 Ein Export von Daten ohne Consent-Zustimmung ist durch die Einstellung *Exportiere MTB-Daten ohne Consent-Zustimmung* möglich.
 Eine entsprechende Behandlung der Daten findet im ETL-Processor statt.
