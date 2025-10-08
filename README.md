@@ -1,5 +1,9 @@
 # Onkostar Plugin "onkostar-plugin-dnpmexport"
 
+## DEPRECATED - VERALTET
+
+Dieses Projekt wird nicht mehr fortgeführt. Ein neues Plugin für das DNPM-Datenmodell 2.1 ist hier verfügbar: https://github.com/pcvolkmer/mv64e-onkostar-plugin-export
+
 Aufgabe dieses Plugins ist es, die Inhalte der DNPM-Formulare in die Datenstruktur des bwHC-Datenmodells zu wandeln und
 anhand festgelegter Regeln die Notwendigkeit zum Export zu prüfen und diesen durchzuführen.
 
